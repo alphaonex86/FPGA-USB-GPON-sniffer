@@ -4,8 +4,8 @@ The cheapest in-line GPON dumper we could design: a USB device that sits in one 
 both directions and dumps that ONU's exchange with the OLT (activation PLOAM, BWmap, OMCI managed entities, low-rate
 GEM traffic), every record tagged with its direction. Goal: diagnose and complete the open source Linux GPON stack.
 
-Status: RTL written and simulated, the FPGA build fits and meets timing with the open toolchain; no board yet.
-Nothing has been built or measured.
+Status: RTL and host tool written and simulated, the FPGA build fits and meets timing with the open toolchain; no
+board yet. Nothing has been built or measured.
 
 ## Why in-line and not a passive tap
 
@@ -49,10 +49,11 @@ what they saw on the bare fibre.
 
 ## Layout
 
-- RTL, PCB generator and the decoder are shared with FPGA-ONU-1GPON-1GE, checked out next to this folder
+- RTL, PCB generator and the host tool are shared with FPGA-ONU-1GPON-1GE, checked out next to this folder
   (`../FPGA-ONU-1GPON-1GE/common`).
-- Here: `ecp5/` (top level, `sh ecp5/build.sh`, the VCXO loop model); later the board and the USB side of the
-  host tool.
+- Host: `make -C ../FPGA-ONU-1GPON-1GE/common/sw/sniffer`, then `sniffer -i /dev/ttyUSB0 -w dump.bin` (decoded
+  records on stdout; `-r dump.bin` decodes a dump again; the port's raw bytes are such a dump).
+- Here: `ecp5/` (top level, `sh ecp5/build.sh`, the VCXO loop model); later the board.
 
 ## License
 
