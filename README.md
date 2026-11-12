@@ -4,7 +4,8 @@ The cheapest in-line GPON dumper we could design: a USB device that sits in one 
 both directions and dumps that ONU's exchange with the OLT (activation PLOAM, BWmap, OMCI managed entities, low-rate
 GEM traffic), every record tagged with its direction. Goal: diagnose and complete the open source Linux GPON stack.
 
-Status: design. Nothing here has been built or measured yet.
+Status: RTL written and simulated, the FPGA build fits and meets timing with the open toolchain; no board yet.
+Nothing has been built or measured.
 
 ## Why in-line and not a passive tap
 
@@ -31,7 +32,7 @@ what they saw on the bare fibre.
 - 3R through the FPGA (re-amplify, re-shape, re-time). An analog burst repeater eats preamble bits (receiver
   settling, laser turn-on) the OLT needs; here the burst's head is rebuilt and the burst keeps its slot. The added
   latency is constant (about 100 ns each way): ranging absorbs it as 20 m of fibre.
-- FPGA: Lattice ECP5 LFE5UM-25F, one DCU, both channels duplex at 2488.32 Mb/s; open toolchain (yosys, nextpnr).
+- FPGA: Lattice ECP5 LFE5UM-45F (same land as the 25F), one DCU, both channels duplex at 2488.32 Mb/s; open toolchain (yosys, nextpnr).
 - One VCXO locked to the downstream clocks everything, so the ONU's bursts are synchronous to the FPGA.
 - Downstream bits pass unchanged (no FEC correction, no decryption): the ONU still does both.
 - Upstream laser: on only while a burst arrives from the ONU, off at its last bit; dark with the FPGA unconfigured
@@ -42,13 +43,16 @@ what they saw on the bare fibre.
 - USB: FT2232H; channel A is the record stream and the register writes (a plain serial port under Linux: no host
   library), channel B is JTAG (openFPGALoader).
 - Levels: both received powers measured, both lasers set by DAC; the fixed pad on the ONU port keeps the ONU's
-  bursts under the receiver's overload.
+  bursts under the receiver's overload. The host tool sets them: without a host the lasers stay dark.
+- Sensitivity: an APD receiver at the OLT port, for homes at -27 dBm and below. The dump does not correct FEC: on a
+  link that only works thanks to FEC the ONU still does, the dump loses frames.
 
 ## Layout
 
 - RTL, PCB generator and the decoder are shared with FPGA-ONU-1GPON-1GE, checked out next to this folder
   (`../FPGA-ONU-1GPON-1GE/common`).
-- Here: the board, the ECP5 top level and build, the USB side of the host tool.
+- Here: `ecp5/` (top level, `sh ecp5/build.sh`, the VCXO loop model); later the board and the USB side of the
+  host tool.
 
 ## License
 
