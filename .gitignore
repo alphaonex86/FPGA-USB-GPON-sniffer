@@ -1,0 +1,9 @@
+out/
+__pycache__/
+*.lck
+*.kicad_prl
+*-backups/
+fp-info-cache
+_autosave-*
+.history/
+**/pcb/*/fab/
