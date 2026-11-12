@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../
 import gen as card  # noqa: E402
 
 SERDES = card.SERDES + ['DS_TX_P', 'DS_TX_N', 'US_TX_P', 'US_TX_N']  # dedicated pads: no IO type
-PINS = (['DS_SD', 'DS_LASER_DIS', 'US_BEN', 'VCXO_PWM', 'FT_RXF_N', 'FT_TXE_N', 'FT_RD_N', 'FT_WR_N', 'SCL', 'SDA',
+PINS = (['DS_LOS', 'DS_LASER_DIS', 'US_LASER_DIS', 'US_BEN', 'US_ABOVE', 'VCXO_PWM', 'FT_RXF_N', 'FT_TXE_N', 'FT_RD_N', 'FT_WR_N', 'SCL', 'SDA',
          'LED_SYNC'] + [f'FT_D{i}' for i in range(8)])
 
 
