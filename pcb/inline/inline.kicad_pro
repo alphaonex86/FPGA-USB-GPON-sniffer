@@ -240,6 +240,10 @@
         "pattern": "GND"
       },
       {
+        "netclass": "Power",
+        "pattern": "VBUS"
+      },
+      {
         "netclass": "Rail",
         "pattern": "+1V0_GT"
       },

@@ -1,6 +1,6 @@
 #!/bin/sh
 # SPDX-License-Identifier: CERN-OHL-S-2.0
-# Builds out/artix7/inline.bit; the balls come from the board netlist (pins.py), the USB core from LUNA (usb_serial.py,
+# Builds out/artix7/inline.bit and inline.bin (the flash image); the balls come from the board netlist (pins.py), the USB core from LUNA (usb_serial.py,
 # in a private Python environment pinned by usb_requirements.txt).
 # The RTL comes from the common project: sbt "runMain pon.Generate" in ../FPGA-ONU-1GPON-1GE.
 set -e

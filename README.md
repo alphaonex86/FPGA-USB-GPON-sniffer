@@ -5,8 +5,8 @@ both directions and dumps that ONU's exchange with the OLT (activation PLOAM, BW
 GEM traffic), every record tagged with its direction. Goal: diagnose and complete the open source Linux GPON stack.
 
 Status: RTL and host tool written; the Artix-7 build meets timing and the whole chip, transceivers included, is
-simulated (bursts regenerated bit for bit at a constant delay). Board placed, not routed. Nothing has been built or
-measured.
+simulated (bursts regenerated bit for bit at a constant delay). Board routed (design rules clean); its JLCPCB files wait for
+the BOSA lead functions to be measured on the part. Nothing has been built or measured.
 
 ## Why in-line and not a passive tap
 
@@ -44,8 +44,8 @@ what they saw on the bare fibre.
   records of four kinds: PLOAM, BWmap entry, GEM fragment (downstream), burst (upstream). Low traffic is the target:
   records beyond what USB 2.0 high speed carries are lost under load, and counted.
 - USB: a USB3320 ULPI PHY and LUNA's serial device (CDC-ACM) in the FPGA: the record stream and the register writes
-  on a plain /dev/ttyACM under Linux (no host library). Bitstream and flash: the JTAG header, any probe with
-  openFPGALoader.
+  on a plain /dev/ttyACM under Linux (no host library). Bitstream: a DIP-8 SPI flash in a socket, written in any
+  programmer (`out/artix7/inline.bin`); no JTAG probe needed (the header's pads stay, unfitted, for rescue).
 - Levels: both received powers measured, both lasers set by DAC; the fixed pad on the ONU port keeps the ONU's
   bursts under the receiver's overload. The host tool sets them: without a host the lasers stay dark.
 - Sensitivity: an APD receiver at the OLT port, for homes at -27 dBm and below. The dump does not correct FEC: on a
@@ -58,7 +58,8 @@ what they saw on the bare fibre.
 - Host: `make -C ../FPGA-ONU-1GPON-1GE/common/sw/sniffer`, then `sniffer -i /dev/ttyACM0 -w dump.bin` (decoded
   records on stdout; `-r dump.bin` decodes a dump again; the port's raw bytes are such a dump).
 - Here: `artix7/` (top level; `sh artix7/build.sh` builds the bitstream, `sh artix7/sim.sh` simulates the chip with
-  the transceiver models), `pcb/inline/` (board, `lcsc.csv` parts list).
+  the transceiver models), `pcb/inline/` (board, 84 x 54 mm; `lcsc.csv` parts list, `order-notes.md`; JLCPCB files:
+  `python3 ../FPGA-ONU-1GPON-1GE/common/pcb/gen/fab.py inline`).
 
 ## License
 

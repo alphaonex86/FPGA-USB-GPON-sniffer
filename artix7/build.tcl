@@ -51,4 +51,9 @@ foreach kind {setup hold} {
   if {$slack < 0} { error "$kind timing not met: $out/timing.rpt" }
 }
 write_bitstream -force $out/inline.bit
-puts "RESULT $out/inline.bit"
+# the socketed flash's image for an external programmer (flashrom wants the chip's full 4 MiB)
+write_cfgmem -force -format bin -interface SPIx1 -size 4 -loadbit "up 0x0 $out/inline.bit" -file $out/inline.bin
+set pad [expr {4 * 1024 * 1024 - [file size $out/inline.bin]}]
+set f [open $out/inline.bin a]; fconfigure $f -translation binary
+puts -nonewline $f [string repeat \xff $pad]; close $f
+puts "RESULT $out/inline.bit $out/inline.bin"
