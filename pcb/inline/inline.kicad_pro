@@ -356,6 +356,58 @@
         "pattern": "US_RX_*"
       },
       {
+        "netclass": "SerDes",
+        "pattern": "DS_TIA_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "DS_DIN_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "DS_LA_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "DS_RX_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "DS_TX_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "US_TX_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "REFCLK_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "USB_D?"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "*_LD_IN_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "*_LD_OUT_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "*_LD_BIAS_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "*_LD_K"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "*_LD_A"
+      },
+      {
         "netclass": "HV",
         "pattern": "*HV_*"
       }
