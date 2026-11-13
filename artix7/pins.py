@@ -14,7 +14,7 @@ GT = ('DS_RX', 'DS_TX', 'US_RX', 'US_TX', 'REFCLK')  # transceiver pads: no IO s
 
 
 def ports():
-    """{net: port} of the top's ports: FT_D[3] is net FT_D3."""
+    """{net: port} of the top's ports: ULPI_D[3] is net ULPI_D3."""
     head = open(TOP).read().split(');', 1)[0]
     out = {}
     for kind, width, names in re.findall(r'(input|output|inout)\s+(\[\d+:0\])?\s*([A-Z0-9_, ]+?)\s*(?:,|$)\s*(?://.*)?$', head, re.M):

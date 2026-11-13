@@ -189,7 +189,7 @@
       },
       {
         "netclass": "Power",
-        "pattern": "+1V8_FT"
+        "pattern": "+1V8_USB"
       },
       {
         "netclass": "Power",
@@ -210,14 +210,6 @@
       {
         "netclass": "Power",
         "pattern": "+3V3_DS_OPT"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+3V3_FTPHY"
-      },
-      {
-        "netclass": "Power",
-        "pattern": "+3V3_FTPLL"
       },
       {
         "netclass": "Power",

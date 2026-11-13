@@ -25,7 +25,7 @@ what they saw on the bare fibre.
                                +---> frame sync, filter <-+      155.52 MHz fixed oscillator
                                           records
                                              |
-                                    FT2232H (USB 2.0 HS) ---- USB-C: power, bitstream, dump
+                                  USB3320 ULPI (USB 2.0 HS) ---- USB-C: power, dump
 ```
 
 ## Design
@@ -42,9 +42,10 @@ what they saw on the bare fibre.
   or hung (pull-ups and an independent maximum-burst cutoff).
 - Dump: frame sync, FEC parity skip, GEM delineation and a filter (the ONU's Alloc-IDs and Port-IDs) in hardware;
   records of four kinds: PLOAM, BWmap entry, GEM fragment (downstream), burst (upstream). Low traffic is the target:
-  about 8 MB/s over USB, records lost under load are counted.
-- USB: FT2232H; channel A is the record stream and the register writes (a plain serial port under Linux: no host
-  library), channel B is JTAG (openFPGALoader).
+  records beyond what USB 2.0 high speed carries are lost under load, and counted.
+- USB: a USB3320 ULPI PHY and LUNA's serial device (CDC-ACM) in the FPGA: the record stream and the register writes
+  on a plain /dev/ttyACM under Linux (no host library). Bitstream and flash: the JTAG header, any probe with
+  openFPGALoader.
 - Levels: both received powers measured, both lasers set by DAC; the fixed pad on the ONU port keeps the ONU's
   bursts under the receiver's overload. The host tool sets them: without a host the lasers stay dark.
 - Sensitivity: an APD receiver at the OLT port, for homes at -27 dBm and below. The dump does not correct FEC: on a
@@ -54,11 +55,10 @@ what they saw on the bare fibre.
 
 - RTL, PCB generator and the host tool are shared with FPGA-ONU-1GPON-1GE, checked out next to this folder
   (`../FPGA-ONU-1GPON-1GE/common`).
-- Host: `make -C ../FPGA-ONU-1GPON-1GE/common/sw/sniffer`, then `sniffer -i /dev/ttyUSB0 -w dump.bin` (decoded
+- Host: `make -C ../FPGA-ONU-1GPON-1GE/common/sw/sniffer`, then `sniffer -i /dev/ttyACM0 -w dump.bin` (decoded
   records on stdout; `-r dump.bin` decodes a dump again; the port's raw bytes are such a dump).
 - Here: `artix7/` (top level; `sh artix7/build.sh` builds the bitstream, `sh artix7/sim.sh` simulates the chip with
-  the transceiver models), `pcb/inline/` (board, `lcsc.csv` parts list), `usb/ft2232h.conf` (EEPROM: write it before
-  the first bitstream).
+  the transceiver models), `pcb/inline/` (board, `lcsc.csv` parts list).
 
 ## License
 

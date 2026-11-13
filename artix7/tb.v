@@ -29,26 +29,41 @@ module tb;
     ds_time = $realtime;
   end
 
-  // the host behind the FT2232H: bytes to the device on RD#, bytes from it counted
+  // the host: no USB model (LUNA's tests cover the protocol), its bytes put straight on the serial core's streams at the
+  // PHY's 60 MHz; bytes to it counted
   reg [7:0] host [0:5];
   integer host_left = 0, device_bytes = 0;
-  reg rxf_n = 1;
-  wire rd_n, wr_n, scl, scl2, sda, ds_tx_p, ds_tx_n, us_tx_p, us_tx_n, ds_laser_dis, us_laser_dis, us_ben, led;
-  wire [7:0] ft_d = !rd_n ? host[6 - host_left] : 8'bz;
-  always @(posedge rd_n) begin
-    host_left = host_left - 1;
-    rxf_n = 1;
-    #100000 if (host_left > 0) rxf_n = 0;
+  reg [7:0] device [0:31];  // the bytes to the host: the dump stays disabled, a register read's reply only
+  reg ulpi_clk = 0;
+  always #8333 ulpi_clk = !ulpi_clk;
+  wire scl, scl2, sda, ds_tx_p, ds_tx_n, us_tx_p, us_tx_n, ds_laser_dis, us_laser_dis, us_ben, led, ulpi_rst_n;
+  initial begin
+    force dut.to_host_ready = 1'b1;
+    force dut.from_host_valid = 1'b0;
   end
-  always @(negedge wr_n) device_bytes = device_bytes + 1;
-  task write_register(input [6:0] number, input [31:0] value);
+  always @(posedge dut.usb_clk) begin
+    if (dut.to_host_valid) begin
+      device_bytes = device_bytes + 1;
+      if (device_bytes <= 32) device[device_bytes - 1] = dut.to_host;
+    end
+    if (host_left > 0 && dut.from_host_valid && dut.from_host_ready) host_left = host_left - 1;
+  end
+  always @(negedge dut.usb_clk) begin  // half a clock off the edge the core samples on
+    force dut.from_host_valid = host_left > 0;
+    force dut.from_host = host[6 - host_left];
+  end
+  always @(posedge dut.out_clk) if (dut.sniffer.dump.command_phase == 2 && dut.sniffer.dump.command_shift[7])
+    $display("%t register %0d <- %h", $realtime, dut.sniffer.dump.command_shift[5:0], dut.sniffer.dump.apb_PWDATA);
+  task command(input [7:0] number, input [31:0] value);  // number bit 7: write
     begin
-      host[0] = 8'h5A; host[1] = {1'b1, number};
+      host[0] = 8'h5A; host[1] = number;
       {host[5], host[4], host[3], host[2]} = value;
       host_left = 6;
-      rxf_n = 0;
       wait (host_left == 0);
     end
+  endtask
+  task write_register(input [6:0] number, input [31:0] value);
+    command({1'b1, number}, value);
   endtask
   pullup (scl);
   pullup (scl2);
@@ -59,7 +74,8 @@ module tb;
     .REFCLK_P(refclk), .REFCLK_N(!refclk), .DS_RX_P(ds_bit), .DS_RX_N(!ds_bit), .US_RX_P(us_bit), .US_RX_N(!us_bit),
     .DS_TX_P(ds_tx_p), .DS_TX_N(ds_tx_n), .US_TX_P(us_tx_p), .US_TX_N(us_tx_n),
     .DS_LOS(1'b0), .DS_LASER_DIS(ds_laser_dis), .US_LASER_DIS(us_laser_dis), .US_BEN(us_ben), .US_ABOVE(1'b0), .BURST_CUT(1'b0), .APD_EN(),
-    .FT_D(ft_d), .FT_RXF_N(rxf_n), .FT_TXE_N(1'b0), .FT_RD_N(rd_n), .FT_WR_N(wr_n), .SCL(scl), .SCL2(scl2), .SDA(sda), .LED_SYNC(led));
+    .ULPI_CLK(ulpi_clk && ulpi_rst_n), .ULPI_D(), .ULPI_DIR(1'b1), .ULPI_NXT(1'b0), .ULPI_STP(), .ULPI_RST_N(ulpi_rst_n),
+    .ULPI_REFCLK(), .SCL(scl), .SCL2(scl2), .SDA(sda), .LED_SYNC(led));
   defparam dut.ds.inst.EXAMPLE_SIMULATION = 1, dut.us.inst.EXAMPLE_SIMULATION = 1;
   defparam dut.ds.inst.EXAMPLE_SIM_GTRESET_SPEEDUP = "TRUE", dut.us.inst.EXAMPLE_SIM_GTRESET_SPEEDUP = "TRUE";
   // The fast-reset GTP model drops RXPMARESETDONE for 20 ps only; the cores' reset sequence waits for that fall to set
@@ -259,6 +275,7 @@ module tb;
     end
     wait (dut.out_r === 2'b00);
     #1000000 write_register(5, 3);  // LASERS: both
+    command(5, 0);  // read back: its reply record is the only traffic to the host (the dump stays disabled)
     #2000000;
     if ($test$plusargs("sweep")) for (sweep = 4; sweep <= 6; sweep = sweep + 1) begin
       write_register(6, 32'h23 | sweep << 8);  // REGEN: head 3, garble 2
@@ -302,6 +319,12 @@ module tb;
       fill_min, fill_max, dut.sniffer.bridge.loop_1.duty);
     if (ds_checked < 100000 || ds_errors != 0 || ds_latency_max - ds_latency_min > 2 * T_DS || ds_laser_dis !== 1'b0) begin
       $display("FAIL downstream (DS_LASER_DIS %b)", ds_laser_dis);
+      fails = fails + 1;
+    end
+    // reply record: 4 head bytes, 8 of time, the register number, its value (LE), padded to 20
+    if (device_bytes != 20 || device[12] != 5 || {device[16], device[15], device[14], device[13]} != 3) begin
+      $display("FAIL LASERS read back: %0d bytes to the host, number %0d, value %h", device_bytes, device[12],
+        {device[16], device[15], device[14], device[13]});
       fails = fails + 1;
     end
     $display("RESULT %0d bytes to the host; %0s", device_bytes, fails == 0 ? "PASS" : "FAILED");

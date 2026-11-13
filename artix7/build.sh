@@ -1,6 +1,7 @@
 #!/bin/sh
 # SPDX-License-Identifier: CERN-OHL-S-2.0
-# Builds out/artix7/inline.bit; the balls come from the board netlist (pins.py).
+# Builds out/artix7/inline.bit; the balls come from the board netlist (pins.py), the USB core from LUNA (usb_serial.py,
+# in a private Python environment pinned by usb_requirements.txt).
 # The RTL comes from the common project: sbt "runMain pon.Generate" in ../FPGA-ONU-1GPON-1GE.
 set -e
 here=$(cd "$(dirname "$0")" && pwd)
@@ -15,6 +16,8 @@ for lib in ncurses tinfo; do
   [ -e "/lib64/lib$lib.so.5" ] || ln -sf "/lib64/lib$lib.so.6" "$out/compat/lib$lib.so.5"
 done
 python3 "$here/pins.py" "$out"
+[ -x "$out/usbvenv/bin/python" ] || { python3 -m venv "$out/usbvenv" && "$out/usbvenv/bin/pip" install -q -r "$here/usb_requirements.txt"; }
+"$out/usbvenv/bin/python" "$here/usb_serial.py" "$out/usb_serial.v"
 cd "$out"
 LD_LIBRARY_PATH="$out/compat${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}" "$vivado" -mode batch -nojournal -log "$out/vivado.log" \
   -source "$here/build.tcl" -tclargs "$out" "$rtl" "$out/pins.xdc"

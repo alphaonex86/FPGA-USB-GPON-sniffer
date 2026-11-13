@@ -4,6 +4,8 @@
 // interpolator (no VCXO), its TXOUTCLK is the DS-locked ref_clk. gt_us: upstream both ways at 4976.64 Mb/s, 4 samples
 // per bit, receiver in lock-to-reference, on the oscillator's own us_clk. The two cores are made by build.tcl.
 // Lasers: DS_LASER_DIS, US_LASER_DIS and US_BEN have board pulls to "dark", so an unconfigured FPGA emits nothing.
+// USB: a USB3320 ULPI PHY in output clock mode (its 60 MHz CLKOUT is usb_clk; its 24 MHz reference from here, no
+// crystal) under LUNA's serial device (usb_serial.v, made by build.sh): the host sees a /dev/ttyACM.
 module inline_artix7 (
   input        REFCLK_P, REFCLK_N,
   input        DS_RX_P, DS_RX_N, US_RX_P, US_RX_N,
@@ -15,9 +17,12 @@ module inline_artix7 (
   input        US_ABOVE,       // comparator: the upstream APD current is over the level DAC's
   input        BURST_CUT,      // the max-burst cutoff holds the upstream laser off
   output       APD_EN,         // both APD bias supplies on (pulled down: off while unconfigured)
-  inout  [7:0] FT_D,           // FT2232H channel A, asynchronous 245 FIFO
-  input        FT_RXF_N, FT_TXE_N,
-  output       FT_RD_N, FT_WR_N,
+  input        ULPI_CLK,       // USB3320 ULPI
+  inout  [7:0] ULPI_D,
+  input        ULPI_DIR, ULPI_NXT,
+  output       ULPI_STP,
+  output       ULPI_RST_N,     // RESETB: low until ULPI_REFCLK runs; no CLKOUT before it rises
+  output       ULPI_REFCLK,    // 24 MHz (REFSEL = 111)
   inout        SCL, SDA,       // level DACs / ADC
   output       SCL2,           // the second DAC's clock (same address as the first)
   output       LED_SYNC
@@ -116,22 +121,57 @@ module inline_artix7 (
   always @(posedge us_clk or negedge us_ok) if (!us_ok) us_r <= 2'b11; else us_r <= {us_r[0], 1'b0};
   always @(posedge out_clk or negedge out_ok) if (!out_ok) out_r <= 2'b11; else out_r <= {out_r[0], 1'b0};
 
-  wire ds_laser, us_laser, scl_low, scl2_low, sda_low, ft_drive;
+  // USB: the PHY's reference, 155.52 MHz x 6.25 / 40.5 = 24.000 MHz; its CLKOUT starts only once RESETB is high, so
+  // the usb domain leaves reset on that clock
+  wire phy_fb, phy_ref_raw, phy_ref, phy_lock, usb_clk;
+  MMCME2_BASE #(.CLKIN1_PERIOD(6.430), .CLKFBOUT_MULT_F(6.25), .CLKOUT0_DIVIDE_F(40.5))
+    phypll (.CLKIN1(sys_clk), .CLKFBIN(phy_fb), .CLKFBOUT(phy_fb), .RST(start), .PWRDWN(1'b0), .CLKOUT0(phy_ref_raw),
+            .LOCKED(phy_lock));
+  BUFG phyrefbufg (.I(phy_ref_raw), .O(phy_ref));
+  ODDR #(.DDR_CLK_EDGE("SAME_EDGE")) phyref (.C(phy_ref), .CE(1'b1), .D1(1'b1), .D2(1'b0), .R(1'b0), .S(1'b0), .Q(ULPI_REFCLK));
+  wire phy_reset = start || !phy_lock;
+  assign ULPI_RST_N = !phy_reset;
+  // CLKOUT deskewed (zero-delay MMCM, 960 MHz VCO): the BUFG's 4.5 ns would eat LUNA's combinational ULPI outputs'
+  // margin; while unlocked (no CLKOUT yet, or lost) the MMCM is reset again every 210 us, past its 100 us lock time
+  wire usb_fb, usb_lock;
+  reg [1:0] usb_lock_s = 0;
+  reg [14:0] usb_wait = 0;
+  always @(posedge sys_clk) begin
+    usb_lock_s <= {usb_lock_s[0], usb_lock};
+    usb_wait <= usb_lock_s[1] ? 15'd0 : usb_wait + 1'b1;
+  end
+  MMCME2_BASE #(.CLKIN1_PERIOD(16.667), .CLKFBOUT_MULT_F(16))
+    usbpll (.CLKIN1(ULPI_CLK), .CLKFBIN(usb_clk), .CLKFBOUT(usb_fb), .RST(phy_reset || &usb_wait[14:4]), .PWRDWN(1'b0),
+            .LOCKED(usb_lock));
+  BUFG usbbufg (.I(usb_fb), .O(usb_clk));
+  reg [1:0] usb_r = 2'b11;
+  always @(posedge usb_clk or negedge usb_lock) if (!usb_lock) usb_r <= 2'b11; else usb_r <= {usb_r[0], 1'b0};
+  wire [7:0] ulpi_in, ulpi_out, to_host, from_host;
+  wire ulpi_oe, to_host_valid, to_host_ready, to_host_last, from_host_valid, from_host_ready;
+  genvar b;
+  generate for (b = 0; b < 8; b = b + 1) begin : ulpi_pad
+    IOBUF pad (.IO(ULPI_D[b]), .I(ulpi_out[b]), .O(ulpi_in[b]), .T(!ulpi_oe));
+  end endgenerate
+  usb_serial usb (
+    .ulpi_clk(usb_clk), .rst(usb_r[1]), .ulpi_data_i(ulpi_in), .ulpi_data_o(ulpi_out), .ulpi_data_oe(ulpi_oe),
+    .ulpi_dir(ULPI_DIR), .ulpi_nxt(ULPI_NXT), .ulpi_stp(ULPI_STP), .ulpi_rst(),
+    .tx_data(to_host), .tx_valid(to_host_valid), .tx_last(to_host_last), .tx_ready(to_host_ready),
+    .rx_data(from_host), .rx_valid(from_host_valid), .rx_ready(from_host_ready));
+
+  wire ds_laser, us_laser, scl_low, scl2_low, sda_low;
   wire [1:0] us_ben;
-  wire [7:0] ft_write;
   InlineSniffer sniffer (
     .clk(ref_clk), .reset(ref_r[1]), .ds_clk(ds_clk), .ds_reset(ds_r[1]), .out_clk(out_clk), .out_reset(out_r[1]),
-    .us_clk(us_clk), .us_reset(us_r[1]),
+    .us_clk(us_clk), .us_reset(us_r[1]), .usb_clk(usb_clk), .usb_reset(usb_r[1]),
     .io_dsRx(ds_rx), .io_usRx(us_rx), .io_dsSignal(ds_ok),
     .io_dsTx(ds_tx), .io_dsLaser(ds_laser), .io_usTx(us_tx), .io_usBen(us_ben), .io_usLaser(us_laser), .io_usAbove(US_ABOVE), .io_burstCut(BURST_CUT), .io_apdOn(APD_EN),
     .io_txFaster(tx_faster),
-    .io_link_rxfN(FT_RXF_N), .io_link_txeN(FT_TXE_N), .io_link_rdN(FT_RD_N), .io_link_wrN(FT_WR_N),
-    .io_link_read(FT_D), .io_link_write(ft_write), .io_link_drive(ft_drive),
+    .io_usb_tx_valid(to_host_valid), .io_usb_tx_ready(to_host_ready), .io_usb_tx_payload(to_host), .io_usb_txLast(to_host_last),
+    .io_usb_rx_valid(from_host_valid), .io_usb_rx_ready(from_host_ready), .io_usb_rx_payload(from_host),
     .io_sclLow(scl_low), .io_scl2Low(scl2_low), .io_sdaLow(sda_low), .io_scl(SCL), .io_sda(SDA), .io_synced(LED_SYNC));
 
   assign DS_LASER_DIS = !ds_laser;
   assign US_LASER_DIS = !us_laser;
-  assign FT_D = ft_drive ? ft_write : 8'bz;
   assign SCL = scl_low ? 1'b0 : 1'bz;
   assign SCL2 = scl2_low ? 1'b0 : 1'bz;
   assign SDA = sda_low ? 1'b0 : 1'bz;

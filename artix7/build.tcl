@@ -34,7 +34,7 @@ gt gt_us 4.97664 40 {CONFIG.gt0_val_port_rxcdrhold true}
 # upstream bursts: the offset cancellation must not adapt on the zeros between them
 tie_high $out/ip/gt_us/gt_us_gt.v RXOSHOLD
 
-read_verilog [list $rtl $here/inline_artix7.v]
+read_verilog [list $rtl $here/inline_artix7.v $out/usb_serial.v]
 read_xdc $here/inline.xdc
 read_xdc $pins
 synth_design -top inline_artix7 -part $part
