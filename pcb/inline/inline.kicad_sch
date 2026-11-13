@@ -5204,7 +5204,7 @@
       (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
       (property
         "Description"
-        "GPON BOSA, both TO cans under the body (X100DG land): 1310/1490 nm ONU type or 1490/1310 nm OLT type; lead functions provisional"
+        "GPON BOSA, both TO cans under the body (X100DG land): 1310/1490 nm ONU type or 1490/1310 nm OLT type"
         (at 0 0 0)
         (effects (font (size 1.27 1.27)) (hide yes)))
       (symbol
@@ -5226,21 +5226,21 @@
           line
           (at -11.43 -2.54 0)
           (length 2.54)
-          (name "LD_K" (effects (font (size 1.27 1.27))))
+          (name "MPD_A" (effects (font (size 1.27 1.27))))
           (number "T2" (effects (font (size 1.27 1.27)))))
         (pin
           passive
           line
           (at -11.43 -5.08 0)
           (length 2.54)
-          (name "MPD_A" (effects (font (size 1.27 1.27))))
+          (name "LD_K" (effects (font (size 1.27 1.27))))
           (number "T3" (effects (font (size 1.27 1.27)))))
         (pin
           passive
           line
           (at -11.43 -7.62 0)
           (length 2.54)
-          (name "MPD_K" (effects (font (size 1.27 1.27))))
+          (name "CASE" (effects (font (size 1.27 1.27))))
           (number "T4" (effects (font (size 1.27 1.27)))))
         (pin
           output
@@ -5250,32 +5250,32 @@
           (name "OUT+" (effects (font (size 1.27 1.27))))
           (number "A" (effects (font (size 1.27 1.27)))))
         (pin
-          output
+          power_in
           line
           (at 11.43 -2.54 180)
           (length 2.54)
-          (name "OUT-" (effects (font (size 1.27 1.27))))
+          (name "GND" (effects (font (size 1.27 1.27))))
           (number "B" (effects (font (size 1.27 1.27)))))
         (pin
-          power_in
+          output
           line
           (at 11.43 -5.08 180)
           (length 2.54)
-          (name "GND" (effects (font (size 1.27 1.27))))
+          (name "OUT-" (effects (font (size 1.27 1.27))))
           (number "C" (effects (font (size 1.27 1.27)))))
-        (pin
-          passive
-          line
-          (at 11.43 -7.62 180)
-          (length 2.54)
-          (name "VAPD" (effects (font (size 1.27 1.27))))
-          (number "D" (effects (font (size 1.27 1.27)))))
         (pin
           power_in
           line
-          (at 11.43 -10.16 180)
+          (at 11.43 -7.62 180)
           (length 2.54)
           (name "VCC" (effects (font (size 1.27 1.27))))
+          (number "D" (effects (font (size 1.27 1.27)))))
+        (pin
+          passive
+          line
+          (at 11.43 -10.16 180)
+          (length 2.54)
+          (name "VAPD" (effects (font (size 1.27 1.27))))
           (number "E" (effects (font (size 1.27 1.27)))))))
     (symbol
       "bridge:SY88993AV"
@@ -16549,11 +16549,6 @@
       (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Datasheet" "" (at 160.02 723.9 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
-      "Verify"
-      "BOSA lead functions provisional (common/pcb/gen/bosa.py): measure them"
-      (at 160.02 723.9 0)
-      (effects (font (size 1.27 1.27)) (hide yes)))
-    (property
       "MPN"
       "GPON ONU BOSA, APD-TIA receiver (1310 nm DFB, 1490 nm APD)"
       (at 160.02 723.9 0)
@@ -16576,19 +16571,19 @@
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "1e384e74-0486-5aa2-bad1-bcc75ae6e6aa"))
   (global_label
-    "US_LD_K"
+    "US_MPD_A"
     (shape passive)
     (at 148.59 726.44 180)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "a3a42799-1f30-508b-b8d6-acdbd1726141"))
   (global_label
-    "US_MPD_A"
+    "US_LD_K"
     (shape passive)
     (at 148.59 728.98 180)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "0244a52e-152c-5666-8201-a62fb300ea3a"))
   (global_label
-    "US_LD_A"
+    "GND"
     (shape passive)
     (at 148.59 731.52 180)
     (effects (font (size 1.27 1.27)) (justify right))
@@ -16600,25 +16595,25 @@
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "8e49bde1-a051-5247-8977-2070d013d407"))
   (global_label
-    "DS_TIA_N"
+    "GND"
     (shape passive)
     (at 171.45 726.44 0)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "49a53d99-4ffe-5d91-b76f-5f4092d181d1"))
   (global_label
-    "GND"
+    "DS_TIA_N"
     (shape passive)
     (at 171.45 728.98 0)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "4b9da97f-2237-57d3-ac15-8a876238569c"))
   (global_label
-    "DS_HV_APD"
+    "+3V3_DS_OPT"
     (shape passive)
     (at 171.45 731.52 0)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "245f458e-7e85-565b-b490-cf1ba5a6f359"))
   (global_label
-    "+3V3_DS_OPT"
+    "DS_HV_APD"
     (shape passive)
     (at 171.45 734.06 0)
     (effects (font (size 1.27 1.27)) (justify left))
@@ -20183,11 +20178,6 @@
       (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Datasheet" "" (at 60.96 1008.38 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
-      "Verify"
-      "BOSA lead functions provisional (common/pcb/gen/bosa.py): measure them"
-      (at 60.96 1008.38 0)
-      (effects (font (size 1.27 1.27)) (hide yes)))
-    (property
       "MPN"
       "XL-BCB2111-LS-02"
       (at 60.96 1008.38 0)
@@ -20210,19 +20200,19 @@
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "ddccde48-1776-5393-a05b-19d3ba07f9a6"))
   (global_label
-    "DS_LD_K"
+    "DS_MPD_A"
     (shape passive)
     (at 49.53 1010.92 180)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "7f923ec1-5360-500c-8b1b-bf550804878b"))
   (global_label
-    "DS_MPD_A"
+    "DS_LD_K"
     (shape passive)
     (at 49.53 1013.46 180)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "2da63281-c2ce-55e6-bff6-21c1437f6063"))
   (global_label
-    "DS_LD_A"
+    "GND"
     (shape passive)
     (at 49.53 1016 180)
     (effects (font (size 1.27 1.27)) (justify right))
@@ -20234,25 +20224,25 @@
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "b989d9f6-1d15-598f-aa22-a7c1e156d413"))
   (global_label
-    "US_TIA_N"
+    "GND"
     (shape passive)
     (at 72.39 1010.92 0)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "6640702a-ce88-5896-99d1-1bd59c0cc8a8"))
   (global_label
-    "GND"
+    "US_TIA_N"
     (shape passive)
     (at 72.39 1013.46 0)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "946fa23c-a73d-5435-bc13-cc4a079e03fe"))
   (global_label
-    "US_HV_APD"
+    "+3V3_US_OPT"
     (shape passive)
     (at 72.39 1016 0)
     (effects (font (size 1.27 1.27)) (justify left))
     (uuid "ea8d48b1-212b-5ab0-8493-d4e2a528be56"))
   (global_label
-    "+3V3_US_OPT"
+    "US_HV_APD"
     (shape passive)
     (at 72.39 1018.54 0)
     (effects (font (size 1.27 1.27)) (justify left))

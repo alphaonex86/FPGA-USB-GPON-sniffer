@@ -5,8 +5,8 @@ both directions and dumps that ONU's exchange with the OLT (activation PLOAM, BW
 GEM traffic), every record tagged with its direction. Goal: diagnose and complete the open source Linux GPON stack.
 
 Status: RTL and host tool written; the Artix-7 build meets timing and the whole chip, transceivers included, is
-simulated (bursts regenerated bit for bit at a constant delay). Board routed (design rules clean); its JLCPCB files wait for
-the BOSA lead functions to be measured on the part. Nothing has been built or measured.
+simulated (bursts regenerated bit for bit at a constant delay). Board routed (design rules clean). Nothing has been built or
+measured.
 
 ## Why in-line and not a passive tap
 
