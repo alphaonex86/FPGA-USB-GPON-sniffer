@@ -4,8 +4,9 @@ The cheapest in-line GPON dumper we could design: a USB device that sits in one 
 both directions and dumps that ONU's exchange with the OLT (activation PLOAM, BWmap, OMCI managed entities, low-rate
 GEM traffic), every record tagged with its direction. Goal: diagnose and complete the open source Linux GPON stack.
 
-Status: RTL and host tool written and simulated, the FPGA build fits and meets timing with the open toolchain; no
-board yet. Nothing has been built or measured.
+Status: RTL and host tool written; the Artix-7 build meets timing and the whole chip, transceivers included, is
+simulated (bursts regenerated bit for bit at a constant delay). Board placed, not routed. Nothing has been built or
+measured.
 
 ## Why in-line and not a passive tap
 
@@ -20,8 +21,8 @@ what they saw on the bare fibre.
             OLT port (ONU-type optics)                              ONU port (OLT-type optics)
  OLT ====== RX 1490 nm --> CH0 RX --[ FIFO ]-----------> CH0 TX --> TX 1490 nm ==[ pad ]====== ONU
   fibre     TX 1310 nm <-- CH1 TX <--[ burst regen ]<--- CH1 RX <-- RX 1310 nm
-                               |          ECP5            |
-                               +---> frame sync, filter <-+      155.52 MHz VCXO locked to the downstream
+                               |        Artix-7           |
+                               +---> frame sync, filter <-+      155.52 MHz fixed oscillator
                                           records
                                              |
                                     FT2232H (USB 2.0 HS) ---- USB-C: power, bitstream, dump
@@ -32,8 +33,10 @@ what they saw on the bare fibre.
 - 3R through the FPGA (re-amplify, re-shape, re-time). An analog burst repeater eats preamble bits (receiver
   settling, laser turn-on) the OLT needs; here the burst's head is rebuilt and the burst keeps its slot. The added
   latency is constant (about 100 ns each way): ranging absorbs it as 20 m of fibre.
-- FPGA: Lattice ECP5 LFE5UM-45F (same land as the 25F), one DCU, both channels duplex at 2488.32 Mb/s; open toolchain (yosys, nextpnr).
-- One VCXO locked to the downstream clocks everything, so the ONU's bursts are synchronous to the FPGA.
+- FPGA: AMD Artix-7 XC7A35T-2FGG484I, two GTP lanes: downstream duplex at 2488.32 Mb/s, upstream at 4976.64 Mb/s
+  (4 samples per bit); Vivado.
+- No VCXO: the downstream transmitter follows the received clock with the GTP's TX phase interpolator. The upstream
+  receiver runs on the fixed oscillator and tracks the ONU's bit phase, so the bursts leave at a constant delay.
 - Downstream bits pass unchanged (no FEC correction, no decryption): the ONU still does both.
 - Upstream laser: on only while a burst arrives from the ONU, off at its last bit; dark with the FPGA unconfigured
   or hung (pull-ups and an independent maximum-burst cutoff).
@@ -53,7 +56,9 @@ what they saw on the bare fibre.
   (`../FPGA-ONU-1GPON-1GE/common`).
 - Host: `make -C ../FPGA-ONU-1GPON-1GE/common/sw/sniffer`, then `sniffer -i /dev/ttyUSB0 -w dump.bin` (decoded
   records on stdout; `-r dump.bin` decodes a dump again; the port's raw bytes are such a dump).
-- Here: `ecp5/` (top level, `sh ecp5/build.sh`, the VCXO loop model); later the board.
+- Here: `artix7/` (top level; `sh artix7/build.sh` builds the bitstream, `sh artix7/sim.sh` simulates the chip with
+  the transceiver models), `pcb/inline/` (board, `lcsc.csv` parts list), `usb/ft2232h.conf` (EEPROM: write it before
+  the first bitstream).
 
 ## License
 

@@ -185,7 +185,7 @@
     "netclass_patterns": [
       {
         "netclass": "Power",
-        "pattern": "+1V1"
+        "pattern": "+1V0"
       },
       {
         "netclass": "Power",
@@ -249,31 +249,15 @@
       },
       {
         "netclass": "Rail",
-        "pattern": "+1V1_HRX"
+        "pattern": "+1V0_GT"
       },
       {
         "netclass": "Rail",
-        "pattern": "+1V1_HTX"
-      },
-      {
-        "netclass": "Rail",
-        "pattern": "+1V1_VCCA"
-      },
-      {
-        "netclass": "Rail",
-        "pattern": "+2V5_AUX"
-      },
-      {
-        "netclass": "Rail",
-        "pattern": "+2V5_AUXA"
+        "pattern": "+1V2_GT"
       },
       {
         "netclass": "Sub",
-        "pattern": "+1V1_SD"
-      },
-      {
-        "netclass": "Sub",
-        "pattern": "+2V5"
+        "pattern": "+1V8"
       },
       {
         "netclass": "SerDes",
@@ -382,6 +366,10 @@
       {
         "netclass": "SerDes",
         "pattern": "REFCLK_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "XO_OUT_*"
       },
       {
         "netclass": "SerDes",
