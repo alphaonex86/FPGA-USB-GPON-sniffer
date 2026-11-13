@@ -47,7 +47,8 @@ what they saw on the bare fibre.
   on a plain /dev/ttyACM under Linux (no host library). Bitstream: a DIP-8 SPI flash in a socket, written in any
   programmer (`out/artix7/inline.bin`); no JTAG probe needed (the header's pads stay, unfitted, for rescue).
 - Levels: both received powers measured, both lasers set by DAC; the fixed pad on the ONU port keeps the ONU's
-  bursts under the receiver's overload. The host tool sets them: without a host the lasers stay dark.
+  bursts under the receiver's overload. The host tool sets them ("Levels" below): without a host the lasers stay
+  dark, and they keep their last levels when it leaves.
 - Sensitivity: an APD receiver at the OLT port, for homes at -27 dBm and below. The dump does not correct FEC: on a
   link that only works thanks to FEC the ONU still does, the dump loses frames.
 
@@ -57,9 +58,31 @@ what they saw on the bare fibre.
   (`../FPGA-ONU-1GPON-1GE/common`).
 - Host: `make -C ../FPGA-ONU-1GPON-1GE/common/sw/sniffer`, then `sniffer -i /dev/ttyACM0 -w dump.bin` (decoded
   records on stdout; `-r dump.bin` decodes a dump again; the port's raw bytes are such a dump).
-- Here: `artix7/` (top level; `sh artix7/build.sh` builds the bitstream, `sh artix7/sim.sh` simulates the chip with
+- Here: `levels.example` (a unit's level file), `artix7/` (top level; `sh artix7/build.sh` builds the bitstream, `sh artix7/sim.sh` simulates the chip with
   the transceiver models), `pcb/inline/` (board, 84 x 54 mm; `lcsc.csv` parts list, `order-notes.md`; JLCPCB files:
   `python3 ../FPGA-ONU-1GPON-1GE/common/pcb/gen/fab.py inline`).
+
+## Levels
+
+`sniffer -i /dev/ttyACM0 -L unit.levels` sets the unit's levels from its level file (`levels.example`): lasers dark,
+APD bias set and switched on, then every second each laser is aimed at what the other port receives + `gain_db`,
+between `floor_dbm` and its `tx_max_dbm`. Starting with `-L` restarts both lasers from dark: the ONU activates again,
+which is the exchange to dump. Without `-L` nothing is touched. Nothing is switched on when a DAC or the ADC does
+not answer or when a current flows on the OLT port's APD lead before its bias is on; over 2 mA there later, bias and
+lasers go off (VCC and APD leads exchanged on that BOSA, or a bias over the breakdown).
+
+A unit's file is measured once, powers taken at the box's connectors with a power meter:
+
+1. `olt_apd_v`, `onu_apd_v`: from each BOSA's test sheet. With only these two lines the tool prints the readings.
+2. OLT port receiver: the drop fibre's power P on the meter, then the fibre on the port: `olt_rx_a_per_w` =
+   printed APD mV / 1200 / P in mW.
+3. ONU port laser (lit while the downstream is received): `onu_tx_bias_ma` at two values, `onu_tx_mod_ma = 0`, the
+   meter on the ONU port: the two powers give `onu_tx_mw_per_ma` and `onu_tx_threshold_ma`, the printed monitor mV
+   over the power `onu_tx_md_mv_per_mw`.
+4. Bursts (a power meter does not read them, and the maximum-burst cutoff forbids a continuous upstream laser):
+   `onu_rx_a_per_w` = printed APD mV / 1200 / the ONU's transmit power in mW (its ANI-G attribute, in the dump);
+   the OLT port laser's threshold and slope from the BOSA's test sheet, corrected with the level the OLT reports
+   for this ONU where it can be read.
 
 ## License
 
