@@ -74,6 +74,9 @@ lasers go off (VCC and APD leads exchanged on that BOSA, or a bias over the brea
 A unit's file is measured once, powers taken at the box's connectors with a power meter:
 
 1. `olt_apd_v`, `onu_apd_v`: from each BOSA's test sheet. With only these two lines the tool prints the readings.
+   `olt_rx_inverted = 1` when the OLT port has light and the downstream never synchronizes; `onu_rx_inverted = 1`
+   (and the 5.1k offset resistor moved to `US_DIN_N`) when the ONU's bursts are never recognised: no BOSA datasheet
+   says which lead of the TIA pair rises with light.
 2. OLT port receiver: the drop fibre's power P on the meter, then the fibre on the port: `olt_rx_a_per_w` =
    printed APD mV / 1200 / P in mW.
 3. ONU port laser (lit while the downstream is received): `onu_tx_bias_ma` at two values, `onu_tx_mod_ma = 0`, the

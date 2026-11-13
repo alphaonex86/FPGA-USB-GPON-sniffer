@@ -11,9 +11,11 @@ extinction_db = 10     # ones over zeros
 olt_apd_v = 38
 onu_apd_v = 42
 
-# Receivers: APD current per received power
+# Receivers: APD current per received power; 1 when the BOSA's TIA pair gives the data inverted
 olt_rx_a_per_w = 8
 onu_rx_a_per_w = 0.08
+#olt_rx_inverted = 1
+#onu_rx_inverted = 1
 
 # Regulated lasers: threshold, slope, the level before the other port's is known, the highest level,
 # and (optional) the monitor diode, which then trims the threshold
