@@ -5025,23 +5025,23 @@
       (in_bom yes)
       (on_board yes)
       (property "Reference" "Y" (at 0 3.81 0) (effects (font (size 1.27 1.27))))
-      (property "Value" "VCXO_LVDS_7050" (at 0 -8.89 0) (effects (font (size 1.27 1.27))))
+      (property "Value" "VCXO_LVDS_7050" (at 0 -11.43 0) (effects (font (size 1.27 1.27))))
       (property
         "Footprint"
-        "Oscillator:Oscillator_SMD_IDT_JU6-6_7.0x5.0mm_P2.54mm"
+        "bridge:VCXO_7050_EP"
         (at 0 0 0)
         (effects (font (size 1.27 1.27)) (hide yes)))
       (property "Datasheet" "" (at 0 0 0) (effects (font (size 1.27 1.27)) (hide yes)))
       (property
         "Description"
-        "LVDS VCXO 3.3 V, 7x5 mm, 6 pads 2.54 mm pitch: VIN control voltage, OE high = on"
+        "LVDS VCXO 3.3 V, 7x5 mm, 6 pads 2.54 mm pitch + centre pad (GND): VIN control voltage, OE high = on"
         (at 0 0 0)
         (effects (font (size 1.27 1.27)) (hide yes)))
       (symbol
         "VCXO_LVDS_7050_1_1"
         (rectangle
           (start -7.62 2.54)
-          (end 7.62 -7.62)
+          (end 7.62 -10.16)
           (stroke (width 0.254) (type default))
           (fill (type background)))
         (pin
@@ -5065,6 +5065,13 @@
           (length 2.54)
           (name "GND" (effects (font (size 1.27 1.27))))
           (number "3" (effects (font (size 1.27 1.27)))))
+        (pin
+          passive
+          line
+          (at -10.16 -7.62 0)
+          (length 2.54)
+          (name "EP" (effects (font (size 1.27 1.27))))
+          (number "7" (effects (font (size 1.27 1.27)))))
         (pin
           power_in
           line
@@ -16771,21 +16778,22 @@
     (dnp no)
     (uuid "8de03341-534d-5051-aeff-fabe79cfd75c")
     (property "Reference" "Y2" (at 58.42 648.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "VCXO 155.52 MHz" (at 58.42 661.67 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "SiT3372 155.52 MHz" (at 58.42 664.21 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
-      "Oscillator:Oscillator_SMD_IDT_JU6-6_7.0x5.0mm_P2.54mm"
+      "bridge:VCXO_7050_EP"
       (at 58.42 652.78 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Datasheet" "" (at 58.42 652.78 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "SiT3372AI-2E2-33NE155.520000 or 515BAA155M520AAG class (LVDS, APR >= +-50 ppm)"
+      "SiT3372AI-2E2-33NE155.520000"
       (at 58.42 652.78 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1" (uuid "5f0e2d57-36f9-5e92-9c04-2dcbc286370b"))
     (pin "2" (uuid "e9180e47-ae35-5ae9-af10-9fa298305fbc"))
     (pin "3" (uuid "86e71c49-c8d3-5902-b9fa-243cf73d4292"))
+    (pin "7" (uuid "786d0bb1-e6b8-50ea-88cc-43e9ff4d5269"))
     (pin "6" (uuid "03be981d-7769-5238-92dc-b5134d065ec9"))
     (pin "4" (uuid "07b46b2b-9f9a-5869-9685-7e21c4c0ea5e"))
     (pin "5" (uuid "9b49b45f-5f18-54f0-afbc-fe3bbabbfce0"))
@@ -16809,6 +16817,12 @@
     (at 48.26 657.86 180)
     (effects (font (size 1.27 1.27)) (justify right))
     (uuid "630801be-452c-55cf-b825-1d356d80dbdd"))
+  (global_label
+    "GND"
+    (shape passive)
+    (at 48.26 660.4 180)
+    (effects (font (size 1.27 1.27)) (justify right))
+    (uuid "02886947-8a9d-5d14-8e28-5f01e9819a24"))
   (global_label
     "+3V3_XO"
     (shape passive)
