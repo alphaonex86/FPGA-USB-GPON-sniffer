@@ -7,7 +7,8 @@ gain_db = 1            # each port sends what the other receives + this
 floor_dbm = -26        # and never under this
 extinction_db = 10     # ones over zeros
 
-# APD bias, from each BOSA's test sheet (a few volts under its breakdown). olt: 17.7 to 55.2 V, onu: 19.4 to 60.6 V
+# APD bias, from each BOSA's test sheet (a few volts under its breakdown; XL-BCB2111: breakdown 33 to 60 V, 3 V under
+# it). olt: 17.7 to 55.2 V, onu: 19.4 to 60.6 V
 olt_apd_v = 38
 onu_apd_v = 42
 
@@ -25,11 +26,13 @@ olt_tx_start_dbm = 2
 olt_tx_max_dbm = 4
 #olt_tx_md_mv_per_mw = 300
 
+# XL-BCB2111 behind the 20 dB pad: threshold 10 mA (15 at most, 50 at 85 C), 0.1 mW/mA (0.08 at least),
+# monitor 0.05 to 0.65 mA/mW on 1.5 k
 onu_tx_threshold_ma = 10
 onu_tx_mw_per_ma = 0.001
 onu_tx_start_dbm = -26
 onu_tx_max_dbm = -16
-onu_tx_md_mv_per_mw = 33000
+onu_tx_md_mv_per_mw = 45000
 
 # Or fixed currents, to measure a laser (instead of its four lines above):
 #onu_tx_bias_ma = 15

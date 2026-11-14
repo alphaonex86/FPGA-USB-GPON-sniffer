@@ -23325,7 +23325,7 @@
     (dnp no)
     (uuid "ea564448-13e8-5b67-bc26-31f3bf6a32c0")
     (property "Reference" "R104" (at 858.52 1211.58 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "3.3k" (at 858.52 1226.82 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "1.5k" (at 858.52 1226.82 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Resistor_SMD:R_0402_1005Metric"
