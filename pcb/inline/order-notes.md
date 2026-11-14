@@ -5,6 +5,8 @@
   `flashrom -p ch341a_spi -w out/artix7/inline.bin`) and insert it, notch on the socket's notch.
 - JTAG (J2): not fitted, its pads stay for rescue (1 +3V3, 2 TCK, 3 TDI, 4 TDO, 5 TMS, 6 GND): a Xilinx Platform
   Cable USB (or its clone) with Vivado or `openFPGALoader -c xilinxPlatformCableUsb out/artix7/inline.bit`.
+- R76: not fitted. It is the upstream offset resistor's other place: if the ONU-port BOSA gives its data inverted,
+  R75's 5.1 k moves there (and `onu_rx_inverted = 1` goes in the level file).
 - BOSAs (U10 OLT port: GPON ONU type, 1310 nm DFB + 1490 nm APD-TIA; U19 ONU port: GPON OLT type, 1490 nm DFB +
   1310 nm burst APD-TIA): JLCPCB cannot supply one (not in its library, not at DigiKey / Mouser): soldered by hand.
   U10 is taken from an ONU (HSGQ X100DG, X111W): the land is theirs, so it goes in as it sat there. U19 is the

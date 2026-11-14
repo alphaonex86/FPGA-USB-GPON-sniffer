@@ -9720,7 +9720,12 @@
     (uuid "abe1f9af-6f47-5ddf-994e-de4bd112f4c8"))
   (no_connect (at 134.62 472.44) (uuid "fe7d4937-cb25-54f0-98e7-f12305b9234b"))
   (no_connect (at 134.62 439.42) (uuid "e182393d-c262-5934-9428-5c497a8173a2"))
-  (no_connect (at 134.62 431.8) (uuid "7955d1fe-c9e7-56e8-99f9-192223d89713"))
+  (global_label
+    "+3V3"
+    (shape passive)
+    (at 134.62 431.8 0)
+    (effects (font (size 1.27 1.27)) (justify left))
+    (uuid "7ab224da-8b00-5a9b-a0b5-d340da3ab8d6"))
   (global_label
     "+3V3"
     (shape passive)
@@ -17618,7 +17623,7 @@
     (dnp no)
     (uuid "91dabfc3-3642-53dd-9c8e-ddbdbf4f1617")
     (property "Reference" "R34" (at 398.78 764.54 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "33k" (at 398.78 779.78 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "39k" (at 398.78 779.78 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Resistor_SMD:R_0402_1005Metric"
@@ -17651,13 +17656,14 @@
     (dnp no)
     (uuid "69a75d1d-11d7-5387-b6cb-7bda6143b916")
     (property "Reference" "C89" (at 419.1 764.54 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "47n" (at 419.1 779.78 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "10n" (at 419.1 779.78 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Capacitor_SMD:C_0402_1005Metric"
       (at 419.1 772.16 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Datasheet" "" (at 419.1 772.16 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "100 V X7R" (at 419.1 772.16 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1" (uuid "2940bcb1-3a89-5f97-80e0-e9ecadeb10ef"))
     (pin "2" (uuid "7f4493a1-20b8-53cd-947f-db6fc2f1f518"))
     (instances
@@ -21627,7 +21633,7 @@
     (dnp no)
     (uuid "e7fecc9f-cb81-5817-bb18-665620340f7a")
     (property "Reference" "R82" (at 398.78 1104.9 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "33k" (at 398.78 1120.14 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "39k" (at 398.78 1120.14 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Resistor_SMD:R_0402_1005Metric"
@@ -21660,13 +21666,14 @@
     (dnp no)
     (uuid "3ee66002-13f3-50e9-a9a7-0c3001c803d3")
     (property "Reference" "C127" (at 419.1 1104.9 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "47n" (at 419.1 1120.14 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "10n" (at 419.1 1120.14 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Capacitor_SMD:C_0402_1005Metric"
       (at 419.1 1112.52 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Datasheet" "" (at 419.1 1112.52 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "100 V X7R" (at 419.1 1112.52 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "1" (uuid "7b36b4f9-b417-5dca-8f6d-0ad978ba6bdb"))
     (pin "2" (uuid "9201b480-c915-5583-9307-67048cd5b42a"))
     (instances
