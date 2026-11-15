@@ -9,7 +9,8 @@
   R75's 5.1 k moves there (and `onu_rx_inverted = 1` goes in the level file).
 - BOSAs (U10 OLT port: GPON ONU type, 1310 nm DFB + 1490 nm APD-TIA; U19 ONU port: GPON OLT type, 1490 nm DFB +
   1310 nm burst APD-TIA): JLCPCB cannot supply one (not in its library, not at DigiKey / Mouser): soldered by hand.
-  U10 is taken from an ONU (HSGQ X100DG, X111W): the land is theirs, so it goes in as it sat there. U19 is the
+  U10 is bought with U19 (an APD-TIA ONU-type BOSA on the table below; the land is the HSGQ X100DG's). Not the
+  X100DG's own BOSA: its receiver is PIN-TIA (lead E measured ~1 V while receiving), and E here carries 18-55 V. U19 is the
   XL-BCB2111-LS-02 (Shenzhen Starsealand): its approval sheet's pin drawing agrees with the table below lead for lead.
   Mounting: the RX can's five leads straight down into A-E, the fibre pointing into the board (west) above the low
   parts; the TX can lies on the fibre's axis at the east end, its four leads bent down: the case lead (the one on the
