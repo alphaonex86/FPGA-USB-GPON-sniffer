@@ -6,6 +6,12 @@ set_property LOC GTPE2_CHANNEL_X0Y0 [get_cells -hier -filter {NAME =~ ds/*gtpe2_
 set_property LOC GTPE2_CHANNEL_X0Y1 [get_cells -hier -filter {NAME =~ us/*gtpe2_i}]
 set_property LOC IBUFDS_GTE2_X0Y0 [get_cells refbuf]
 create_clock -name refclk -period 6.430 [get_ports REFCLK_P]
+# Lane 2 = USB 3 (RX B10/A10, TX B6/A6) on PLL1, its 125 MHz oscillator on MGTREFCLK1 (F10/E10); the lane's 250 MHz
+# word clock is LUNA's PIPE clock
+set_property LOC GTPE2_CHANNEL_X0Y2 [get_cells -hier -filter {REF_NAME == GTPE2_CHANNEL && NAME =~ usb3/*}]
+set_property LOC IBUFDS_GTE2_X0Y1 [get_cells usbrefbuf]
+create_clock -name usbref -period 8.000 [get_ports USB_REFCLK_P]
+create_clock -name sspipe -period 4.000 [get_pins -hier -filter {NAME =~ usb3/*/TXOUTCLK}]
 create_clock -name ulpi -period 16.667 [get_ports ULPI_CLK]
 # every crossing goes through a synchroniser or a dual-clock queue (the dump's clock too, although made from ds TXOUTCLK)
 set_clock_groups -asynchronous -group refclk \
@@ -13,7 +19,8 @@ set_clock_groups -asynchronous -group refclk \
   -group [get_clocks -of_objects [get_pins -hier -filter {NAME =~ ds/*gtpe2_i/RXOUTCLK}]] \
   -group [get_clocks -include_generated_clocks -of_objects [get_pins -hier -filter {NAME =~ us/*gtpe2_i/TXOUTCLK}]] \
   -group [get_clocks -of_objects [get_pins outpll/CLKOUT0]] \
-  -group [get_clocks -include_generated_clocks ulpi]
+  -group [get_clocks -include_generated_clocks ulpi] \
+  -group usbref -group sspipe
 # ULPI (USB3320, output clock mode, its Table 4-3): its outputs change 1.0 to 3.5 ns after CLKOUT, its inputs want
 # 5.0 ns of setup and no hold; + 0.2 ns of board trace each way (the max only). LUNA turns the bus around in the
 # same cycle (DIR to D, port to port): fast pads.

@@ -70,7 +70,10 @@ module tb;
   pullup (sda);
 
   reg us_bit = 0;
+  reg usb_refclk = 0;   // the USB 3 lane only gets its clock: no host on it here
+  always #4 usb_refclk = !usb_refclk;
   inline_artix7 dut (
+    .USB_REFCLK_P(usb_refclk), .USB_REFCLK_N(!usb_refclk), .SS_RX_P(1'b0), .SS_RX_N(1'b1), .SS_TX_P(), .SS_TX_N(),
     .REFCLK_P(refclk), .REFCLK_N(!refclk), .DS_RX_P(ds_bit), .DS_RX_N(!ds_bit), .US_RX_P(us_bit), .US_RX_N(!us_bit),
     .DS_TX_P(ds_tx_p), .DS_TX_N(ds_tx_n), .US_TX_P(us_tx_p), .US_TX_N(us_tx_n),
     .DS_LOS(1'b0), .DS_LASER_DIS(ds_laser_dis), .US_LASER_DIS(us_laser_dis), .US_BEN(us_ben), .US_ABOVE(1'b0), .BURST_CUT(1'b0), .APD_EN(),

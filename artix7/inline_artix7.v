@@ -6,8 +6,13 @@
 // Lasers: DS_LASER_DIS, US_LASER_DIS and US_BEN have board pulls to "dark", so an unconfigured FPGA emits nothing.
 // USB: a USB3320 ULPI PHY in output clock mode (its 60 MHz CLKOUT is usb_clk; its 24 MHz reference from here, no
 // crystal) under LUNA's serial device (usb_serial.v, made by build.sh): the host sees a /dev/ttyACM.
+// USB 3: GTP lane 2 at 5 Gb/s on PLL1 (2.5 GHz from its own 125 MHz oscillator, which is also ss_clk) under LUNA's
+// SuperSpeed device (usb3.v): a second, bulk IN only device beside the serial one, for the wide dump.
 module inline_artix7 (
   input        REFCLK_P, REFCLK_N,
+  input        USB_REFCLK_P, USB_REFCLK_N,   // 125 MHz
+  input        SS_RX_P, SS_RX_N,
+  output       SS_TX_P, SS_TX_N,
   input        DS_RX_P, DS_RX_N, US_RX_P, US_RX_N,
   output       DS_TX_P, DS_TX_N, US_TX_P, US_TX_N,
   input        DS_LOS,         // no light at the OLT port (its limiting amp)
@@ -30,6 +35,9 @@ module inline_artix7 (
   wire refclk, sys_clk, ref_clk, ds_clk, us_clk, us_clk2x, out_clk;
   IBUFDS_GTE2 refbuf (.I(REFCLK_P), .IB(REFCLK_N), .CEB(1'b0), .O(refclk), .ODIV2());
   BUFG sysbuf (.I(refclk), .O(sys_clk));
+  wire usb_refclk, ss_clk, ss_pll_clk, ss_pll_refclk, ss_pll_lock, ss_pll_reset;
+  IBUFDS_GTE2 usbrefbuf (.I(USB_REFCLK_P), .IB(USB_REFCLK_N), .CEB(1'b0), .O(usb_refclk), .ODIV2());
+  BUFG ssbufg (.I(usb_refclk), .O(ss_clk));
 
   // start, and the downstream receiver held in reset while its limiting amp sees no light
   reg [7:0] por = 0;
@@ -43,17 +51,17 @@ module inline_artix7 (
   // no clock but the oscillator's: no lost-clock detector (PLL0LOCKDETCLK only drives it, UG482), the lock is enough
   wire pll_clk, pll_refclk, pll_lock, ds_pll_reset, us_pll_reset;
   GTPE2_COMMON #(
-    .PLL0_FBDIV(4), .PLL0_FBDIV_45(4), .PLL0_REFCLK_DIV(1), .PLL1_FBDIV(1), .PLL1_FBDIV_45(4), .PLL1_REFCLK_DIV(1),
+    .PLL0_FBDIV(4), .PLL0_FBDIV_45(4), .PLL0_REFCLK_DIV(1), .PLL1_FBDIV(4), .PLL1_FBDIV_45(5), .PLL1_REFCLK_DIV(1),
     .BIAS_CFG(64'h0000000000050001), .COMMON_CFG(32'h00000000), .PLL0_CFG(27'h01F03DC), .PLL0_DMON_CFG(1'b0),
     .PLL0_INIT_CFG(24'h00001E), .PLL0_LOCK_CFG(9'h1E8), .PLL1_CFG(27'h01F03DC), .PLL1_DMON_CFG(1'b0),
     .PLL1_INIT_CFG(24'h00001E), .PLL1_LOCK_CFG(9'h1E8), .PLL_CLKOUT_CFG(8'h00), .RSVD_ATTR0(16'h0000), .RSVD_ATTR1(16'h0000)
   ) common (
-    .GTREFCLK0(refclk), .GTREFCLK1(1'b0), .GTEASTREFCLK0(1'b0), .GTEASTREFCLK1(1'b0), .GTWESTREFCLK0(1'b0), .GTWESTREFCLK1(1'b0),
+    .GTREFCLK0(refclk), .GTREFCLK1(usb_refclk), .GTEASTREFCLK0(1'b0), .GTEASTREFCLK1(1'b0), .GTWESTREFCLK0(1'b0), .GTWESTREFCLK1(1'b0),
     .GTGREFCLK0(1'b0), .GTGREFCLK1(1'b0),
     .PLL0OUTCLK(pll_clk), .PLL0OUTREFCLK(pll_refclk), .PLL0LOCK(pll_lock), .PLL0REFCLKLOST(), .PLL0FBCLKLOST(),
     .PLL0LOCKDETCLK(1'b0), .PLL0LOCKEN(1'b1), .PLL0PD(1'b0), .PLL0REFCLKSEL(3'b001), .PLL0RESET(ds_pll_reset || us_pll_reset),
-    .PLL1OUTCLK(), .PLL1OUTREFCLK(), .PLL1LOCK(), .PLL1REFCLKLOST(), .PLL1FBCLKLOST(),
-    .PLL1LOCKDETCLK(1'b0), .PLL1LOCKEN(1'b1), .PLL1PD(1'b1), .PLL1REFCLKSEL(3'b001), .PLL1RESET(1'b0),
+    .PLL1OUTCLK(ss_pll_clk), .PLL1OUTREFCLK(ss_pll_refclk), .PLL1LOCK(ss_pll_lock), .PLL1REFCLKLOST(), .PLL1FBCLKLOST(),
+    .PLL1LOCKDETCLK(1'b0), .PLL1LOCKEN(1'b1), .PLL1PD(1'b0), .PLL1REFCLKSEL(3'b010), .PLL1RESET(ss_pll_reset),
     .DRPADDR(8'd0), .DRPCLK(1'b0), .DRPDI(16'd0), .DRPDO(), .DRPEN(1'b0), .DRPRDY(), .DRPWE(1'b0),
     .BGRCALOVRDENB(1'b1), .BGBYPASSB(1'b1), .BGMONITORENB(1'b1), .BGPDB(1'b1), .BGRCALOVRD(5'b11111), .RCALENB(1'b1),
     .PLLRSVD1(16'd0), .PLLRSVD2(5'd0), .PMARSVD(8'd0), .PMARSVDOUT(), .DMONITOROUT(), .REFCLKOUTMONITOR0(), .REFCLKOUTMONITOR1());
@@ -158,16 +166,28 @@ module inline_artix7 (
     .tx_data(to_host), .tx_valid(to_host_valid), .tx_last(to_host_last), .tx_ready(to_host_ready),
     .rx_data(from_host), .rx_valid(from_host_valid), .rx_ready(from_host_ready));
 
+  // USB 3: the wide dump's words to the host
+  reg [7:0] ss_por = 0;
+  always @(posedge ss_clk) if (!(&ss_por)) ss_por <= ss_por + 1'b1;
+  wire ss_reset = !(&ss_por);
+  wire [31:0] ss_word;
+  wire ss_valid, ss_ready, ss_trained;
+  usb3 usb3 (
+    .clk(ss_clk), .rst(ss_reset), .pll_clk(ss_pll_clk), .pll_refclk(ss_pll_refclk), .pll_lock(ss_pll_lock),
+    .pll_reset(ss_pll_reset), .tx_p(SS_TX_P), .tx_n(SS_TX_N), .rx_p(SS_RX_P), .rx_n(SS_RX_N),
+    .data(ss_word), .valid(ss_valid), .ready(ss_ready), .trained(ss_trained));
+
   wire ds_laser, us_laser, scl_low, scl2_low, sda_low;
   wire [1:0] us_ben;
   InlineSniffer sniffer (
     .clk(ref_clk), .reset(ref_r[1]), .ds_clk(ds_clk), .ds_reset(ds_r[1]), .out_clk(out_clk), .out_reset(out_r[1]),
-    .us_clk(us_clk), .us_reset(us_r[1]), .usb_clk(usb_clk), .usb_reset(usb_r[1]),
+    .us_clk(us_clk), .us_reset(us_r[1]), .usb_clk(usb_clk), .usb_reset(usb_r[1]), .ss_clk(ss_clk),
     .io_dsRx(ds_rx), .io_usRx(us_rx), .io_dsSignal(ds_ok),
     .io_dsTx(ds_tx), .io_dsLaser(ds_laser), .io_usTx(us_tx), .io_usBen(us_ben), .io_usLaser(us_laser), .io_usAbove(US_ABOVE), .io_burstCut(BURST_CUT), .io_apdOn(APD_EN),
     .io_txFaster(tx_faster),
     .io_usb_tx_valid(to_host_valid), .io_usb_tx_ready(to_host_ready), .io_usb_tx_payload(to_host), .io_usb_txLast(to_host_last),
     .io_usb_rx_valid(from_host_valid), .io_usb_rx_ready(from_host_ready), .io_usb_rx_payload(from_host),
+    .io_ss_tx_valid(ss_valid), .io_ss_tx_ready(ss_ready), .io_ss_tx_payload(ss_word), .io_ss_up(ss_trained),
     .io_sclLow(scl_low), .io_scl2Low(scl2_low), .io_sdaLow(sda_low), .io_scl(SCL), .io_sda(SDA), .io_synced(LED_SYNC));
 
   assign DS_LASER_DIS = !ds_laser;

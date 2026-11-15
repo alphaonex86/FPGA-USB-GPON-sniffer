@@ -34,7 +34,7 @@ gt gt_us 4.97664 40 {CONFIG.gt0_val_port_rxcdrhold true}
 # upstream bursts: the offset cancellation must not adapt on the zeros between them
 tie_high $out/ip/gt_us/gt_us_gt.v RXOSHOLD
 
-read_verilog [list $rtl $here/inline_artix7.v $out/usb_serial.v]
+read_verilog [list $rtl $here/inline_artix7.v $out/usb_serial.v $out/usb3.v]
 read_xdc $here/inline.xdc
 read_xdc $pins
 synth_design -top inline_artix7 -part $part
@@ -45,6 +45,7 @@ route_design
 report_utilization -file $out/utilization.rpt
 report_timing_summary -file $out/timing.rpt
 report_clocks -file $out/clocks.rpt
+report_power -file $out/power.rpt
 foreach kind {setup hold} {
   set slack [get_property SLACK [get_timing_paths -$kind]]
   puts "RESULT $kind slack $slack ns"

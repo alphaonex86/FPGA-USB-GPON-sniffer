@@ -1,0 +1,125 @@
+LUNA 0.2.3 (BSD-3-Clause), SuperSpeed: an endpoint's NRDY and ERDY reach the host (the multiplexer dropped them,
+ERDY left as NRDY) and a data packet can carry End Of Burst.  Applied by build.sh in the private environment.
+
+diff -ru a/luna/gateware/usb/usb3/device.py b/luna/gateware/usb/usb3/device.py
+--- a/luna/gateware/usb/usb3/device.py	2026-11-14 20:15:28.302151887 -0400
++++ b/luna/gateware/usb/usb3/device.py	2026-11-14 20:15:28.315493917 -0400
+@@ -157,6 +157,7 @@
+             protocol.endpoint_interface.tx_endpoint_number  .eq(endpoint_collection.tx_endpoint_number),
+             protocol.endpoint_interface.tx_sequence_number  .eq(endpoint_collection.tx_sequence_number),
+             protocol.endpoint_interface.tx_direction        .eq(endpoint_collection.tx_direction),
++            protocol.endpoint_interface.tx_end_of_burst     .eq(endpoint_collection.tx_end_of_burst),
+ 
+             # Handshake interface.
+             protocol.endpoint_interface.handshakes_out      .connect(endpoint_collection.handshakes_out),
+diff -ru a/luna/gateware/usb/usb3/link/data.py b/luna/gateware/usb/usb3/link/data.py
+--- a/luna/gateware/usb/usb3/link/data.py	2026-11-14 20:15:28.297120405 -0400
++++ b/luna/gateware/usb/usb3/link/data.py	2026-11-14 20:15:42.800572960 -0400
+@@ -357,6 +357,7 @@
+         self.data_length     = Signal(range(self.MAX_PACKET_SIZE + 1))
+         self.address         = Signal(7)
+         self.direction       = Signal()
++        self.end_of_burst    = Signal()
+ 
+         # Output streams.
+         self.header_source   = HeaderQueue()
+@@ -376,6 +377,7 @@
+         endpoint_number = Signal.like(self.endpoint_number)
+         data_length     = Signal.like(self.data_length)
+         direction       = Signal.like(self.direction)
++        end_of_burst    = Signal()
+ 
+ 
+         # For now, we'll pass our data stream through unmodified; only buffered to improve
+@@ -398,7 +400,8 @@
+                     sequence_number  .eq(self.sequence_number),
+                     endpoint_number  .eq(self.endpoint_number),
+                     data_length      .eq(self.data_length),
+-                    direction        .eq(self.direction)
++                    direction        .eq(self.direction),
++                    end_of_burst     .eq(self.end_of_burst)
+                 ]
+ 
+                 # Once our data goes valid, begin sending our data.
+@@ -419,6 +422,7 @@
+                     # We're sending a data packet from up to the host.
+                     header.type             .eq(HeaderPacketType.DATA),
+                     header.direction        .eq(direction),
++                    header.end_of_burst     .eq(end_of_burst),
+                     header.device_address   .eq(self.address),
+ 
+                     # Fill in our input parameters...
+diff -ru a/luna/gateware/usb/usb3/link/layer.py b/luna/gateware/usb/usb3/link/layer.py
+--- a/luna/gateware/usb/usb3/link/layer.py	2026-11-14 20:15:28.292255686 -0400
++++ b/luna/gateware/usb/usb3/link/layer.py	2026-11-14 20:15:28.315701627 -0400
+@@ -52,6 +52,7 @@
+         self.data_sink_endpoint_number = Signal(4)
+         self.data_sink_length          = Signal(range(1024 + 1))
+         self.data_sink_direction       = Signal()
++        self.data_sink_end_of_burst    = Signal()
+ 
+         # Device state for header packets
+         self.current_address           = Signal(7)
+@@ -260,7 +261,8 @@
+             data_tx.sequence_number  .eq(self.data_sink_sequence_number),
+             data_tx.endpoint_number  .eq(self.data_sink_endpoint_number),
+             data_tx.data_length      .eq(self.data_sink_length),
+-            data_tx.direction        .eq(self.data_sink_direction)
++            data_tx.direction        .eq(self.data_sink_direction),
++            data_tx.end_of_burst     .eq(self.data_sink_end_of_burst)
+         ]
+ 
+ 
+diff -ru a/luna/gateware/usb/usb3/protocol/endpoint.py b/luna/gateware/usb/usb3/protocol/endpoint.py
+--- a/luna/gateware/usb/usb3/protocol/endpoint.py	2026-11-14 20:15:28.281876978 -0400
++++ b/luna/gateware/usb/usb3/protocol/endpoint.py	2026-11-14 20:15:28.315424065 -0400
+@@ -79,6 +79,7 @@
+         self.tx_endpoint_number    = Signal(4)
+         self.tx_sequence_number    = Signal(5)
+         self.tx_direction          = Signal(init=1)
++        self.tx_end_of_burst       = Signal()
+ 
+         # Handshaking / transaction packet exchange.
+         self.handshakes_out        = HandshakeGeneratorInterface()
+@@ -205,6 +206,7 @@
+                     shared.tx                  .stream_eq(interface.tx),
+                     shared.tx_zlp              .eq(interface.tx_zlp),
+                     shared.tx_direction        .eq(interface.tx_direction),
++                    shared.tx_end_of_burst     .eq(interface.tx_end_of_burst),
+                     shared.tx_endpoint_number  .eq(interface.tx_endpoint_number),
+                     shared.tx_sequence_number  .eq(interface.tx_sequence_number),
+                     shared.tx_length           .eq(interface.tx_length)
+@@ -217,7 +219,9 @@
+         for interface in self._interfaces:
+             any_generate_signal_asserted = (
+                 interface.handshakes_out.send_ack   |
+-                interface.handshakes_out.send_stall
++                interface.handshakes_out.send_stall |
++                interface.handshakes_out.send_nrdy  |
++                interface.handshakes_out.send_erdy
+             )
+ 
+             # If the given interface is trying to send an handshake, connect it up
+diff -ru a/luna/gateware/usb/usb3/protocol/layer.py b/luna/gateware/usb/usb3/protocol/layer.py
+--- a/luna/gateware/usb/usb3/protocol/layer.py	2026-11-14 20:15:28.287166967 -0400
++++ b/luna/gateware/usb/usb3/protocol/layer.py	2026-11-14 20:15:28.315561173 -0400
+@@ -120,6 +120,7 @@
+             link.data_sink_endpoint_number  .eq(endpoint_interface.tx_endpoint_number),
+             link.data_sink_sequence_number  .eq(endpoint_interface.tx_sequence_number),
+             link.data_sink_direction        .eq(endpoint_interface.tx_direction),
++            link.data_sink_end_of_burst     .eq(endpoint_interface.tx_end_of_burst),
+ 
+             # Handshake exchange interface.
+             tp_generator.interface          .connect(endpoint_interface.handshakes_out),
+diff -ru a/luna/gateware/usb/usb3/protocol/transaction.py b/luna/gateware/usb/usb3/protocol/transaction.py
+--- a/luna/gateware/usb/usb3/protocol/transaction.py	2026-11-14 20:15:28.277016037 -0400
++++ b/luna/gateware/usb/usb3/protocol/transaction.py	2026-11-14 20:15:28.315153507 -0400
+@@ -267,7 +267,7 @@
+                 with m.If(interface.send_nrdy):
+                     m.next = "SEND_NRDY"
+                 with m.If(interface.send_erdy):
+-                    m.next = "SEND_NRDY"
++                    m.next = "SEND_ERDY"
+ 
+ 
+             # SEND_ACK -- actively send an ACK packet to our link partner; and wait for that to complete.

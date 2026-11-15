@@ -10,7 +10,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), '../
 from boards import inline  # noqa: E402
 
 TOP = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'inline_artix7.v')
-GT = ('DS_RX', 'DS_TX', 'US_RX', 'US_TX', 'REFCLK')  # transceiver pads: no IO standard
+GT = ('DS_RX', 'DS_TX', 'US_RX', 'US_TX', 'REFCLK', 'SS_RX', 'SS_TX', 'USB_REFCLK')  # transceiver pads: no IO standard
 
 
 def ports():

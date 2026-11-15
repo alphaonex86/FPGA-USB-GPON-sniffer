@@ -151,7 +151,7 @@
         "max_error": 0.005,
         "min_clearance": 0.1,
         "min_connection": 0.0,
-        "min_copper_edge_clearance": 0.3,
+        "min_copper_edge_clearance": 0.2,
         "min_groove_width": 0.0,
         "min_hole_clearance": 0.2,
         "min_hole_to_hole": 0.25,
@@ -597,6 +597,22 @@
       {
         "netclass": "SerDes",
         "pattern": "USB_D?"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "USB_?X?_?"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "SS_*"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "USB_REFCLK_?"
+      },
+      {
+        "netclass": "SerDes",
+        "pattern": "XO125_OUT_?"
       },
       {
         "netclass": "SerDes",

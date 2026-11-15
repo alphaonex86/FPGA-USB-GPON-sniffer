@@ -11,7 +11,7 @@ mkdir -p "$out/sim"
 cd "$out/sim"
 export LD_LIBRARY_PATH="$out/compat${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
 cores=$(find "$out/ip/gt_ds" "$out/ip/gt_us" -name '*.v' ! -path '*/doc/*')
-"$bin/xvlog" -nolog "$here/tb.v" "$here/inline_artix7.v" "$rtl" "$out/usb_serial.v" $cores "$bin/../data/verilog/src/glbl.v"
+"$bin/xvlog" -nolog "$here/tb.v" "$here/inline_artix7.v" "$rtl" "$out/usb_serial.v" "$out/usb3.v" $cores "$bin/../data/verilog/src/glbl.v"
 "$bin/xelab" -nolog -L unisims_ver -L secureip -s inline tb glbl
 ln -sf "$(dirname "$rtl")"/InlineSniffer.v_*.bin .   # its RAMs' initial contents, read from the working directory
 "$bin/xsim" -nolog inline -R ${TRACE:+-testplusarg trace} ${SWEEP:+-testplusarg sweep} \
