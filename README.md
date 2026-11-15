@@ -92,30 +92,40 @@ A unit's file is measured once, powers taken at the box's connectors with a powe
 
 ## Dump rules
 
-The ONU's user traffic can be more than USB 2.0 carries. Sixteen rules, written by the host at each start, choose
-which Ethernet frames of the kept Port-IDs become records. A rule matches on the direction, the GEM Port-ID and the
-frame's first 20 bytes (addresses, tags, ethertype) under a mask; the first rule that matches decides: `keep`, `drop`
-or `head` (the frame's first `-S` bytes). `-F` is the action for the frames no rule matches (default `keep`: without
-options everything is dumped as before).
+The ONU's user traffic can be more than USB 2.0 carries. Rules written by the host at each start choose which
+Ethernet frames become records. A rule matches on the direction, the GEM Port-ID and the frame's first 20 bytes
+(addresses, tags, ethertype) under a mask; the first rule that matches decides: `keep`, `drop` or `head` (the
+frame's first `-S` bytes). `-F` is the action for the frames no rule matches (default `keep`). The device has 16
+rules: the first is the tool's own (the OMCI Port-ID kept whole, both directions), 15 are for `-f`.
 
-    sniffer -i /dev/ttyACM0 -f drop,multicast                  # no multicast / broadcast
-    sniffer -i /dev/ttyACM0 -f keep,vlan=100 -f keep,vlan=200 -F drop   # two VLANs only
-    sniffer -i /dev/ttyACM0 -f keep,port=1 -F head -S 64       # OMCI (Port-ID 1 here) whole, 64 bytes of the rest
+    sniffer -i /dev/ttyACM0 -F drop                            # PLOAM, BWmap, OMCI only: the MEs, whatever the load
+    sniffer -i /dev/ttyACM0 -f keep,vlan=100 -F drop           # the same plus one VLAN (TR-069 management, ...)
+    sniffer -i /dev/ttyACM0 -f drop,multicast                  # everything but multicast / broadcast
+    sniffer -i /dev/ttyACM0 -F head -S 64                      # OMCI whole, 64 bytes of every other frame
     sniffer -i /dev/ttyACM0 -f drop,us,12=0800 -f drop,ds,port=1025,0=00112233/ffffff00
 
-- OMCI is GEM traffic too: with `-F drop` or `-F head` put a `keep,port=<OMCI Port-ID>` rule first (the decoder
-  prints the Port-ID at `Configure_Port-ID`).
+- Which Port-IDs: upstream, the ONU's bursts carry all of them. Downstream, the OMCI Port-ID (`Configure_Port-ID`
+  or `-p`) always; with `-f`, `-F` or `-S` also the ONU's data Port-IDs, taken from the OMCI as the OLT creates them
+  (GEM port network CTP), and those given by `-g ID`. A tool started after the ONU was configured has not seen them:
+  `-g`, or restart the ONU. Without rule options the downstream data is not dumped, as before.
+- PLOAM, BWmap and OMCI records never pass the rules: an ME dump stays whole under any rule set. What can still lose
+  records is the USB itself when the rules keep more than it carries: those are counted, and printed.
 - A frame split over several GEM fragments is judged on its first fragment, the others follow; a first fragment
   shorter than the bytes a rule compares does not match that rule.
-- Downstream, a dropped frame costs nothing: it is judged at the line rate before the record queue. Upstream, the
+- Both directions are judged at the line rate, before the record queues: a dropped frame costs nothing. Upstream, the
   GEM frames are found in the burst by their header check (the bytes before them, PLOAMu and DBRu, are not known to
   the FPGA): a frame taken out leaves its 5 header bytes, marked with the count of payload bytes left, so the decoder
-  still walks the burst by its grants.
+  still walks the burst by its grants. A run of idle GEM headers (a granted allocation the ONU did not fill) is
+  recorded as its last header with the count of the others: 5 bytes.
 - Ciphered Port-IDs (most unicast, AES-128): the rules read such a frame through the key the ONU sent upstream
   (`Encryption_Key`, in clear), which the host gives to the FPGA at each `Key_Switching_Time`; the decoder deciphers
-  the records the same way, the raw dump keeps the line's bytes. A host started after the key exchange has no key:
-  until the next one those frames are kept whole (`UNREAD` counts them) and printed as `ciphered`.
-- Counters, printed when they change: fragments the rules dropped, ciphered frames kept unread, records lost.
+  the records the same way, the raw dump keeps the line's bytes. A host started after the key exchange has no key
+  until the next one: such a frame is judged by the rules that compare no byte (`ds`, `port=N`), then by `-F`,
+  counted in `UNREAD`, and printed as `ciphered` when kept. Excluding heavy traffic by Port-ID therefore works with or
+  without the key; the upstream is never ciphered.
+- The decoded text prints the `Encryption_Key` PLOAMu and deciphered frames: treat it like the raw dump, out of any
+  public folder.
+- Counters, printed when they change: fragments the rules dropped, ciphered frames judged unread, records lost.
 - Design: registers, comparators and small memories only (one 32-bit masked compare per rule and clock, the rules
   in 16 x 5 words), so it carries over to an ASIC; the rule count and the bytes compared are generics.
 

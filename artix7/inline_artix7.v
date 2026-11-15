@@ -27,7 +27,7 @@ module inline_artix7 (
   output       SCL2,           // the second DAC's clock (same address as the first)
   output       LED_SYNC
 );
-  wire refclk, sys_clk, ref_clk, ds_clk, us_clk, us_clk2x, out_clk;
+  wire refclk, sys_clk, ref_clk, ds_clk, us_clk, us_clk2x, out_clk, fast_clk;
   IBUFDS_GTE2 refbuf (.I(REFCLK_P), .IB(REFCLK_N), .CEB(1'b0), .O(refclk), .ODIV2());
   BUFG sysbuf (.I(refclk), .O(sys_clk));
 
@@ -104,12 +104,13 @@ module inline_artix7 (
     .gt0_pll0outclk_in(pll_clk), .gt0_pll0outrefclk_in(pll_refclk), .gt0_pll0lock_in(pll_lock), .gt0_pll0refclklost_in(1'b0),
     .gt0_pll0reset_out(us_pll_reset), .gt0_pll1outclk_in(1'b0), .gt0_pll1outrefclk_in(1'b0));
 
-  // the dump's 77.76 MHz: ref_clk x 5/8
-  wire out_pll_fb, out_pll_lock, out_pll_clk;
-  PLLE2_BASE #(.CLKIN1_PERIOD(8.037), .CLKFBOUT_MULT(10), .CLKOUT0_DIVIDE(16))
+  // the dump's 77.76 MHz: ref_clk x 5/8; and its double, edge on edge: the upstream dump at its line rate
+  wire out_pll_fb, out_pll_lock, out_pll_clk, fast_pll_clk;
+  PLLE2_BASE #(.CLKIN1_PERIOD(8.037), .CLKFBOUT_MULT(10), .CLKOUT0_DIVIDE(16), .CLKOUT1_DIVIDE(8))
     outpll (.CLKIN1(ref_clk), .CLKFBIN(out_pll_fb), .CLKFBOUT(out_pll_fb), .RST(!ds_tx_done), .PWRDWN(1'b0),
-            .CLKOUT0(out_pll_clk), .LOCKED(out_pll_lock));
+            .CLKOUT0(out_pll_clk), .CLKOUT1(fast_pll_clk), .LOCKED(out_pll_lock));
   BUFG outbufg (.I(out_pll_clk), .O(out_clk));
+  BUFG fastbufg (.I(fast_pll_clk), .O(fast_clk));
 
   // resets: asserted at once, released two clocks after their condition clears, in each domain
   wire ds_ok = ds_rx_done && !los[1];
@@ -161,7 +162,7 @@ module inline_artix7 (
   wire ds_laser, us_laser, scl_low, scl2_low, sda_low;
   wire [1:0] us_ben;
   InlineSniffer sniffer (
-    .clk(ref_clk), .reset(ref_r[1]), .ds_clk(ds_clk), .ds_reset(ds_r[1]), .out_clk(out_clk), .out_reset(out_r[1]),
+    .clk(ref_clk), .reset(ref_r[1]), .ds_clk(ds_clk), .ds_reset(ds_r[1]), .out_clk(out_clk), .out_reset(out_r[1]), .fast_clk(fast_clk),
     .us_clk(us_clk), .us_reset(us_r[1]), .usb_clk(usb_clk), .usb_reset(usb_r[1]),
     .io_dsRx(ds_rx), .io_usRx(us_rx), .io_dsSignal(ds_ok),
     .io_dsTx(ds_tx), .io_dsLaser(ds_laser), .io_usTx(us_tx), .io_usBen(us_ben), .io_usLaser(us_laser), .io_usAbove(US_ABOVE), .io_burstCut(BURST_CUT), .io_apdOn(APD_EN),
