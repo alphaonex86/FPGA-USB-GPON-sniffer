@@ -33,7 +33,7 @@ what they saw on the bare fibre.
 - 3R through the FPGA (re-amplify, re-shape, re-time). An analog burst repeater eats preamble bits (receiver
   settling, laser turn-on) the OLT needs; here the burst's head is rebuilt and the burst keeps its slot. The added
   latency is constant (about 100 ns each way): ranging absorbs it as 20 m of fibre.
-- FPGA: AMD Artix-7 XC7A35T-2FGG484I, two GTP lanes: downstream duplex at 2488.32 Mb/s, upstream at 4976.64 Mb/s
+- FPGA: AMD Artix-7 XC7A100T-2FGG484I, two GTP lanes: downstream duplex at 2488.32 Mb/s, upstream at 4976.64 Mb/s
   (4 samples per bit); Vivado.
 - No VCXO: the downstream transmitter follows the received clock with the GTP's TX phase interpolator. The upstream
   receiver runs on the fixed oscillator and tracks the ONU's bit phase, so the bursts leave at a constant delay.
@@ -106,10 +106,13 @@ rules: the first is the tool's own (the OMCI Port-ID kept whole, both directions
 
 - Which Port-IDs: upstream, the ONU's bursts carry all of them. Downstream, the OMCI Port-ID (`Configure_Port-ID`
   or `-p`) always; with `-f`, `-F` or `-S` also the ONU's data Port-IDs, taken from the OMCI as the OLT creates them
-  (GEM port network CTP), and those given by `-g ID`. A tool started after the ONU was configured has not seen them:
-  `-g`, or restart the ONU. Without rule options the downstream data is not dumped, as before.
-- PLOAM, BWmap and OMCI records never pass the rules: an ME dump stays whole under any rule set. What can still lose
-  records is the USB itself when the rules keep more than it carries: those are counted, and printed.
+  (GEM port network CTP), and those given by `-g ID`; a learned one is let go when the OLT deletes its CTP or resets
+  the MIB. A tool started after the ONU was configured has not seen them: `-g`, or restart the ONU. Without rule
+  options the downstream data is not dumped, as before.
+- PLOAM, BWmap and OMCI records never pass the rules: an ME dump stays whole under any rule set. The records wait
+  for the USB in 384 KB of the FPGA's block RAM, filled at twice the USB's rate: a peak is sent late instead of lost,
+  about 10 ms of USB time. Only a load over the USB rate for longer loses records: counted, and
+  printed.
 - A frame split over several GEM fragments is judged on its first fragment, the others follow; a first fragment
   shorter than the bytes a rule compares does not match that rule.
 - Both directions are judged at the line rate, before the record queues: a dropped frame costs nothing. Upstream, the

@@ -8778,7 +8778,7 @@
 				)
 			)
 		)
-		(property "Value" "XC7A35T-2FGG484I"
+		(property "Value" "XC7A100T-2FGG484I"
 			(at 0 12.5 270)
 			(layer "F.Fab")
 			(uuid "8e7fb179-2e19-4269-9c36-21097bc3da25")
@@ -8823,7 +8823,7 @@
 				)
 			)
 		)
-		(property "MPN" "XC7A35T-2FGG484I"
+		(property "MPN" "XC7A100T-2FGG484I"
 			(at 0 0 270)
 			(layer "F.SilkS")
 			(hide yes)

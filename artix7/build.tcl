@@ -3,7 +3,7 @@
 # vivado -mode batch -source build.tcl -tclargs <out dir> <InlineSniffer.v> <pins.xdc>
 lassign $argv out rtl pins
 set here [file dirname [file normalize [info script]]]
-set part xc7a35tfgg484-2
+set part xc7a100tfgg484-2
 create_project -in_memory -part $part
 file delete -force $out/ip
 file mkdir $out/ip

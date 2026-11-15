@@ -9165,7 +9165,7 @@
     (dnp no)
     (uuid "5ab2bb35-1d3b-5c65-ba44-7a8d88b5715a")
     (property "Reference" "U8" (at 83.82 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 83.82 547.37 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 83.82 547.37 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
@@ -9174,7 +9174,7 @@
     (property "Datasheet" "" (at 83.82 472.44 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "XC7A35T-2FGG484I"
+      "XC7A100T-2FGG484I"
       (at 83.82 472.44 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
@@ -9774,7 +9774,7 @@
     (dnp no)
     (uuid "f031d51e-d60a-5ec9-b8e7-659496f3232c")
     (property "Reference" "U8" (at 220.98 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 220.98 547.37 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 220.98 547.37 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
@@ -9783,7 +9783,7 @@
     (property "Datasheet" "" (at 220.98 472.44 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "XC7A35T-2FGG484I"
+      "XC7A100T-2FGG484I"
       (at 220.98 472.44 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
@@ -10474,7 +10474,7 @@
     (dnp no)
     (uuid "5b8f4acd-f5fe-5bbe-94e3-51bbd678d73d")
     (property "Reference" "U8" (at 365.76 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 365.76 547.37 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 365.76 547.37 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
@@ -10483,7 +10483,7 @@
     (property "Datasheet" "" (at 365.76 472.44 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "XC7A35T-2FGG484I"
+      "XC7A100T-2FGG484I"
       (at 365.76 472.44 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
@@ -11189,7 +11189,7 @@
     (dnp no)
     (uuid "af5fe8ba-ef33-5d91-95ec-1e41f8d26665")
     (property "Reference" "U8" (at 480.06 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 480.06 455.93 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 480.06 455.93 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
@@ -11198,7 +11198,7 @@
     (property "Datasheet" "" (at 480.06 426.72 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "XC7A35T-2FGG484I"
+      "XC7A100T-2FGG484I"
       (at 480.06 426.72 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
@@ -11752,14 +11752,14 @@
     (dnp no)
     (uuid "54c672f8-caab-5684-b7e4-08cf86945f35")
     (property "Reference" "U8" (at 508 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 508 420.37 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 508 420.37 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
       (at 508 408.94 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (property "Datasheet" "" (at 508 408.94 0) (effects (font (size 1.27 1.27)) (hide yes)))
-    (property "MPN" "XC7A35T-2FGG484I" (at 508 408.94 0) (effects (font (size 1.27 1.27)) (hide yes)))
+    (property "MPN" "XC7A100T-2FGG484I" (at 508 408.94 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
     (pin "AA18" (uuid "96e6351c-4555-52f3-9738-c64709c3d32e"))
     (pin "AA19" (uuid "b327d00a-9137-5758-b4b7-20fa94b6d80c"))
@@ -12293,7 +12293,7 @@
     (dnp no)
     (uuid "1ff1989e-17b4-5672-99b5-66435e87a0a5")
     (property "Reference" "U8" (at 553.72 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 553.72 481.33 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 553.72 481.33 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
@@ -12302,7 +12302,7 @@
     (property "Datasheet" "" (at 553.72 439.42 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "XC7A35T-2FGG484I"
+      "XC7A100T-2FGG484I"
       (at 553.72 439.42 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
@@ -12886,7 +12886,7 @@
     (dnp no)
     (uuid "c9466bbc-516c-541a-94bd-d073d8a9f9be")
     (property "Reference" "U8" (at 650.24 394.97 0) (effects (font (size 1.27 1.27))))
-    (property "Value" "XC7A35T-2FGG484I" (at 650.24 549.91 0) (effects (font (size 1.27 1.27))))
+    (property "Value" "XC7A100T-2FGG484I" (at 650.24 549.91 0) (effects (font (size 1.27 1.27))))
     (property
       "Footprint"
       "Package_BGA:Xilinx_FGG484"
@@ -12895,7 +12895,7 @@
     (property "Datasheet" "" (at 650.24 472.44 0) (effects (font (size 1.27 1.27)) (hide yes)))
     (property
       "MPN"
-      "XC7A35T-2FGG484I"
+      "XC7A100T-2FGG484I"
       (at 650.24 472.44 0)
       (effects (font (size 1.27 1.27)) (hide yes)))
     (pin "AA17" (uuid "21d7dd83-cc06-5eab-b0de-8cd4da08a70e"))
