@@ -43,6 +43,9 @@ what they saw on the bare fibre.
 - Dump: frame sync, FEC parity skip, GEM delineation and a filter (the ONU's Alloc-IDs and Port-IDs) in hardware;
   records of four kinds: PLOAM, BWmap entry, GEM fragment (downstream), burst (upstream). Low traffic is the target:
   records beyond what USB 2.0 high speed carries are lost under load, and counted.
+- Dump rules ("Dump rules" below): a software-written match on each Ethernet frame's first 20 bytes decides what
+  the USB carries of the user traffic, both directions. They work on the dump's copy only: the fibre relay and its
+  bandwidth do not see them.
 - USB: a USB3320 ULPI PHY and LUNA's serial device (CDC-ACM) in the FPGA: the record stream and the register writes
   on a plain /dev/ttyACM under Linux (no host library). Bitstream: a DIP-8 SPI flash in a socket, written in any
   programmer (`out/artix7/inline.bin`); no JTAG probe needed (the header's pads stay, unfitted, for rescue).
@@ -86,6 +89,35 @@ A unit's file is measured once, powers taken at the box's connectors with a powe
    `onu_rx_a_per_w` = printed APD mV / 1200 / the ONU's transmit power in mW (its ANI-G attribute, in the dump);
    the OLT port laser's threshold and slope from the BOSA's test sheet, corrected with the level the OLT reports
    for this ONU where it can be read.
+
+## Dump rules
+
+The ONU's user traffic can be more than USB 2.0 carries. Sixteen rules, written by the host at each start, choose
+which Ethernet frames of the kept Port-IDs become records. A rule matches on the direction, the GEM Port-ID and the
+frame's first 20 bytes (addresses, tags, ethertype) under a mask; the first rule that matches decides: `keep`, `drop`
+or `head` (the frame's first `-S` bytes). `-F` is the action for the frames no rule matches (default `keep`: without
+options everything is dumped as before).
+
+    sniffer -i /dev/ttyACM0 -f drop,multicast                  # no multicast / broadcast
+    sniffer -i /dev/ttyACM0 -f keep,vlan=100 -f keep,vlan=200 -F drop   # two VLANs only
+    sniffer -i /dev/ttyACM0 -f keep,port=1 -F head -S 64       # OMCI (Port-ID 1 here) whole, 64 bytes of the rest
+    sniffer -i /dev/ttyACM0 -f drop,us,12=0800 -f drop,ds,port=1025,0=00112233/ffffff00
+
+- OMCI is GEM traffic too: with `-F drop` or `-F head` put a `keep,port=<OMCI Port-ID>` rule first (the decoder
+  prints the Port-ID at `Configure_Port-ID`).
+- A frame split over several GEM fragments is judged on its first fragment, the others follow; a first fragment
+  shorter than the bytes a rule compares does not match that rule.
+- Downstream, a dropped frame costs nothing: it is judged at the line rate before the record queue. Upstream, the
+  GEM frames are found in the burst by their header check (the bytes before them, PLOAMu and DBRu, are not known to
+  the FPGA): a frame taken out leaves its 5 header bytes, marked with the count of payload bytes left, so the decoder
+  still walks the burst by its grants.
+- Ciphered Port-IDs (most unicast, AES-128): the rules read such a frame through the key the ONU sent upstream
+  (`Encryption_Key`, in clear), which the host gives to the FPGA at each `Key_Switching_Time`; the decoder deciphers
+  the records the same way, the raw dump keeps the line's bytes. A host started after the key exchange has no key:
+  until the next one those frames are kept whole (`UNREAD` counts them) and printed as `ciphered`.
+- Counters, printed when they change: fragments the rules dropped, ciphered frames kept unread, records lost.
+- Design: registers, comparators and small memories only (one 32-bit masked compare per rule and clock, the rules
+  in 16 x 5 words), so it carries over to an ASIC; the rule count and the bytes compared are generics.
 
 ## License
 

@@ -2,16 +2,17 @@
 # inline_artix7: the transceiver sites (the board follows them) and the clock relations; the cores bring the
 # periods of their own output clocks.
 # Lane 0 = downstream (RX B8/A8, TX B4/A4), lane 1 = upstream (RX D11/C11, TX D5/C5), oscillator on MGTREFCLK0 (F6/E6).
-set_property LOC GTPE2_CHANNEL_X0Y0 [get_cells -hier -filter {NAME =~ ds/*gtpe2_i}]
-set_property LOC GTPE2_CHANNEL_X0Y1 [get_cells -hier -filter {NAME =~ us/*gtpe2_i}]
+set_property LOC GTPE2_CHANNEL_X0Y0 [get_cells -hier -filter {NAME =~ *gt0_gt_ds_i/gtpe2_i}]
+set_property LOC GTPE2_CHANNEL_X0Y1 [get_cells -hier -filter {NAME =~ *gt0_gt_us_i/gtpe2_i}]
 set_property LOC IBUFDS_GTE2_X0Y0 [get_cells refbuf]
 create_clock -name refclk -period 6.430 [get_ports REFCLK_P]
 create_clock -name ulpi -period 16.667 [get_ports ULPI_CLK]
+# (the lanes by their core's own cell names: synthesis may rename the instances `ds` / `us`)
 # every crossing goes through a synchroniser or a dual-clock queue (the dump's clock too, although made from ds TXOUTCLK)
 set_clock_groups -asynchronous -group refclk \
-  -group [get_clocks -of_objects [get_pins -hier -filter {NAME =~ ds/*gtpe2_i/TXOUTCLK}]] \
-  -group [get_clocks -of_objects [get_pins -hier -filter {NAME =~ ds/*gtpe2_i/RXOUTCLK}]] \
-  -group [get_clocks -include_generated_clocks -of_objects [get_pins -hier -filter {NAME =~ us/*gtpe2_i/TXOUTCLK}]] \
+  -group [get_clocks -of_objects [get_pins -hier -filter {NAME =~ *gt0_gt_ds_i/gtpe2_i/TXOUTCLK}]] \
+  -group [get_clocks -of_objects [get_pins -hier -filter {NAME =~ *gt0_gt_ds_i/gtpe2_i/RXOUTCLK}]] \
+  -group [get_clocks -include_generated_clocks -of_objects [get_pins -hier -filter {NAME =~ *gt0_gt_us_i/gtpe2_i/TXOUTCLK}]] \
   -group [get_clocks -of_objects [get_pins outpll/CLKOUT0]] \
   -group [get_clocks -include_generated_clocks ulpi]
 # ULPI (USB3320, output clock mode, its Table 4-3): its outputs change 1.0 to 3.5 ns after CLKOUT, its inputs want
